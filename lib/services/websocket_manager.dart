@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketManager {
@@ -22,6 +24,23 @@ class WebSocketManager {
   void close() {
     _channel.sink.close();
     _isOpen = false;
+  }
+
+
+  void sendRequest(String method, Map<String, dynamic> params) {
+    final requestId = const Uuid().v4();
+    final request = {
+      'id': requestId,
+      'method': method,
+      'params': params,
+    };
+    _channel.sink.add(jsonEncode(request)); // Convert Map to JSON String
+  }
+
+  void listenForResponses(Function(dynamic) callback) {
+    _channel.stream.listen((dynamic message) {
+      callback(message);
+    });
   }
 
 }
