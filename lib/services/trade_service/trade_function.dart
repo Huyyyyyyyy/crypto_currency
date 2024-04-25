@@ -3,7 +3,9 @@ import 'package:crypto/crypto.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
 import 'package:crypto_currency/services/trade_service/filter_variables.dart';
+import 'package:crypto_currency/services/websocket_manager.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 class BinanceAPI {
   static const String apiKey = 'c1190246c854f0c5cabc136a6d6477cfd0397bb4d1c8c1564e80d7853d7bd337';
@@ -282,7 +284,36 @@ class BinanceAPI {
       throw Exception('Error fetching data: $error');
     }
   }
-  
+
+  static Future<void> getWsAccountBalance() async {
+
+    try{
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final streamOfSocket = WebSocketManager(testNetEndpoint);
+
+      final requestId = const Uuid().v4();
+      const method = 'account.balance';
+      final params = {
+        "apiKey": apiKey,
+        "timestamp": timestamp,
+      };
+
+      // Generate signature
+      final signature = generateSignatureV2(params, apiSecret);
+      params['signature'] = signature;
+      print(signature);
+
+      streamOfSocket.sendRequest(requestId, method, params);
+
+      streamOfSocket.listenForResponses((dynamic message) {
+        print('Received response: $message');
+        // Handle response here
+      });
+    }catch(error){
+      print('fail error: $error');
+    }
+
+  }
   //area for trading feature
 
 
@@ -337,7 +368,6 @@ class BinanceAPI {
       print('Error fetching data: $error');
     }
   }
-
   //area for account feature
 
 
@@ -354,6 +384,25 @@ class BinanceAPI {
 
     return digest.toString(); // Trả về chữ ký dạng hex string
   }
-  // area for function
+
+  static String generateSignatureV2(Map<String, dynamic> params, String secretKey) {
+    // Step 1: Construct the signature payload
+    final sortedParams = Map.fromEntries(params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
+    final signaturePayload = _formatParams(sortedParams);
+    print(signaturePayload);
+
+    // Step 2: Compute the signature
+    String signature = generateSignature(signaturePayload, secretKey);
+
+    return signature;
+  }
+
+  static String _formatParams(Map<String, dynamic> params) {
+    final List<String> formattedParams = [];
+    params.forEach((key, value) {
+      formattedParams.add('$key=${value.toString()}');
+    });
+    return formattedParams.join('&');
+  }
 
 }
