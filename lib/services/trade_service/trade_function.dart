@@ -1,0 +1,360 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'package:crypto_currency/model/enum/enum_order.dart';
+import 'package:crypto_currency/model/order_future/order_model.dart';
+import 'package:crypto_currency/services/trade_service/filter_variables.dart';
+import 'package:http/http.dart' as http;
+
+class BinanceAPI {
+  static const String apiKey = 'c1190246c854f0c5cabc136a6d6477cfd0397bb4d1c8c1564e80d7853d7bd337';
+  static const String apiSecret = '485a1c2aeab09ef00b7d4f5371aba2e41c796a72f63204e7338247a819d9a318';
+  static const String endpoint = 'https://testnet.binancefuture.com';
+  static const String baseUrl = 'https://api.binance.com';
+  static const String testNetBaseWebSocket = 'wss://fstream.binancefuture.com';
+  static const String testNetEndpoint = 'wss://testnet.binancefuture.com/ws-fapi/v1';
+  static const String testNetBase = 'wss://testnet.binancefuture.com/ws/';
+
+
+
+  //area for trading feature
+  static Future<void> getBalance() async{
+    try{
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      String query = 'recvWindow=9999999&timestamp=$timestamp';
+
+      String signature = generateSignature(query, apiSecret);
+      String params = '$query&signature=$signature';
+
+      final response = await http.get(
+        Uri.parse('$endpoint/fapi/v2/balance?$params'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print(response.body);
+      } else {
+        print('Failed to fetch data: ${response.body}');
+      }
+    }catch (error) {
+      print('Error fetching data: $error');
+    }
+  }
+
+  static Future<String> getExchangeInfo(String symbol) async {
+    try {
+      String query = 'symbol=$symbol';
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/v3/exchangeInfo?$query'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return response.body;
+      } else {
+        throw Exception('Failed to fetch data: ${response.body}');
+      }
+    } catch (error) {
+      throw Exception('Error fetching data: $error');
+    }
+  }
+
+  static Future<String> getMarkPrice(String symbol) async {
+    try {
+      String query = 'symbol=$symbol';
+      final response = await http.get(
+        Uri.parse('$endpoint/fapi/v1/premiumIndex?$query'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        return jsonData['markPrice'];
+      } else {
+        throw Exception('Failed to fetch data: ${response.body}');
+      }
+    } catch (error) {
+      throw Exception('Error fetching data: $error');
+    }
+  }
+
+  static Future<FilterVariables> filterTheOrder(String exchangeInfo, String targetSymbol) async {
+
+    FilterVariables filterVariables = FilterVariables(0,0,0,0,0,0,0,0,0,0,0);
+    final jsonData = json.decode(exchangeInfo);
+
+    if (jsonData.containsKey('symbols')) {
+      List<dynamic> symbols = jsonData['symbols'];
+      if (symbols.isNotEmpty) {
+        Map<dynamic, dynamic> symbolInfo = symbols.firstWhere((symbol) => symbol['symbol'] == targetSymbol, orElse: () => {});
+        if (symbolInfo.isNotEmpty) {
+          List<dynamic> filters = symbolInfo['filters'];
+          Map<dynamic, dynamic> priceFilter = filters.firstWhere((filter) => filter['filterType'] == 'PRICE_FILTER', orElse: () => {});
+          Map<dynamic, dynamic> percentPrice = filters.firstWhere((filter) => filter['filterType'] == 'PERCENT_PRICE_BY_SIDE', orElse: () => {});
+          Map<dynamic, dynamic> lotSize = filters.firstWhere((filter) => filter['filterType'] == 'LOT_SIZE', orElse: () => {});
+          Map<dynamic, dynamic> minNotional = filters.firstWhere((filter) => filter['filterType'] == 'NOTIONAL', orElse: () => {});
+          Map<dynamic, dynamic> maxNumOrders = filters.firstWhere((filter) => filter['filterType'] == 'MAX_NUM_ORDERS', orElse: () => {});
+
+            filterVariables.minPrice = double.parse(priceFilter['minPrice']);
+            filterVariables.maxPrice = double.parse(priceFilter['maxPrice']);
+            filterVariables.tickSize = double.parse(priceFilter['tickSize']);
+            Future<String> getMarkPrices = getMarkPrice(targetSymbol);
+            String markPrice = await getMarkPrices;
+            filterVariables.markPrice =double.parse(markPrice);
+
+            filterVariables.minQty = double.parse(lotSize['minQty']);
+            filterVariables.maxQty = double.parse(lotSize['maxQty']);
+            filterVariables.stepSize = double.parse(lotSize['stepSize']);
+            //
+            filterVariables.limit = maxNumOrders['maxNumOrders'] as int;
+            //
+            filterVariables.multiplierUp = double.parse(percentPrice['bidMultiplierUp']);
+            filterVariables.multiplierDown = double.parse(percentPrice['bidMultiplierDown']);
+            //
+            filterVariables.notional = double.parse(minNotional['minNotional']);
+
+        } else {
+          print('Symbol not found');
+        }
+      } else {
+        print('No symbols found');
+      }
+    } else {
+      print('No symbols key found');
+    }
+
+    return filterVariables;
+  }
+
+  static Future<void> createNewOrderFuture(OrderModel newOrder) async {
+    try {
+
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      String goodTillDateTimestamp = DateTime.now().add(const Duration(minutes: 15)).millisecondsSinceEpoch.toString();
+
+      String exchangeInfo = await getExchangeInfo(newOrder.symbol);
+
+      FilterVariables filterVariables = await filterTheOrder(exchangeInfo, newOrder.symbol);
+
+      // test coin BTC
+      if (newOrder.quantity < filterVariables.minQty || newOrder.quantity > filterVariables.maxQty) {
+        print('${newOrder.quantity}, min : ${filterVariables.minQty}, max: ${filterVariables.maxQty}');
+        print('[BINACE-LOT-SIZE] Your order is outside the allowed quantity range.');
+        return;
+      }
+      // if ((newOrder.quantity - filterVariables.minQty) % filterVariables.stepSize != 0) {
+      //   print((newOrder.quantity - filterVariables.minQty) % filterVariables.stepSize);
+      //   print('[BINACE-LOT-SIZE] Your order quantity is not divisible by the step size.');
+      //   return;
+      // }
+      if(double.parse(newOrder.priceLimit) < filterVariables.minPrice || double.parse(newOrder.priceLimit) > filterVariables.maxPrice ) {
+        print('${newOrder.priceLimit}, min : ${filterVariables.minPrice}, max: ${filterVariables.maxPrice}');
+        print('[BINACE-PRICE-FILTER] Your order price is outside the allowed price range');
+        return;
+      }
+
+      if (newOrder.side == SideOrder.BUY){
+        if(double.parse(newOrder.priceLimit) > filterVariables.markPrice*filterVariables.multiplierUp){
+          print(filterVariables.markPrice*filterVariables.multiplierUp);
+          print('[BINACE-PERCENT-PRICE] Your order is not divisible by the valid range for a price base on the market price');
+          return;
+        }
+      }
+
+      if (newOrder.side == SideOrder.SELL){
+        if(double.parse(newOrder.priceLimit) < filterVariables.markPrice*filterVariables.multiplierDown){
+          print('[BINACE-PERCENT-PRICE] Your order is not divisible by the valid range for a price base on the market price');
+          return;
+        }
+      }
+
+      if(newOrder.type == TypeOrder.LIMIT){
+        print('quantity: ${newOrder.quantity}, limit: ${newOrder.priceLimit}');
+        if((newOrder.quantity * double.parse(newOrder.priceLimit)) < filterVariables.notional){
+          print('[BINACE-MIN-NOTIONAL] Your order is not divisible by the minimum notional');
+          return;
+        }
+      }
+
+      if (newOrder.type == TypeOrder.MARKET){
+        print('quantity: ${newOrder.quantity}, market: ${newOrder.priceMarket}');
+        if((newOrder.quantity * double.parse(newOrder.priceMarket)) < filterVariables.notional){
+          print('[BINACE-MIN-NOTIONAL] Your order is not divisible by the minimum notional');
+          return;
+        }
+      }
+
+      // {
+      //   // Làm tròn các giá trị cần thiết trước khi tính toán
+      //   double priceLimit = double.parse(newOrder.priceLimit);
+      //   double minPrice = filterVariables.minPrice;
+      //   double tickSize = filterVariables.tickSize;
+      //
+      //   print('limit: $priceLimit, min: $minPrice, tick: $tickSize');
+      //
+      //   // Làm tròn số liệu trước khi thực hiện phép chia lấy dư
+      //   double difference = (priceLimit - minPrice);
+      //   double roundedDifference = (difference / tickSize) % tickSize;
+      //
+      //   // Kiểm tra xem kết quả có bằng 0 hay không
+      //   if (roundedDifference != 0) {
+      //     print(roundedDifference);
+      //     print('[BINACE-PRICE-FILTER] Your order quantity is not divisible by the tick size.');
+      //     return;
+      //   }
+      //
+      // }
+
+      String query = '';
+
+      if(newOrder.type == TypeOrder.LIMIT){
+        query =
+            'symbol=${newOrder.symbol}'
+            '&side=${newOrder.side}'
+            '&type=${newOrder.type}'
+            '&quantity=${newOrder.quantity}'
+            '&recvWindow=${newOrder.recvWindow}'
+            '&timestamp=$timestamp'
+            '&price=${newOrder.priceLimit}'
+            '&timeInforce=${newOrder.timeInforce}'
+            '&goodTillDate=$goodTillDateTimestamp';
+
+      }
+
+      else if (newOrder.type == TypeOrder.MARKET)
+      {
+        query =
+            'symbol=${newOrder.symbol}'
+            '&side=${newOrder.side}'
+            '&type=${newOrder.type}'
+            '&quantity=${newOrder.quantity}'
+            '&recvWindow=${newOrder.recvWindow}'
+            '&timestamp=$timestamp';
+            // '&price=${newOrder.price}'
+            // '&timeInforce=${newOrder.timeInforce}'
+            // '&goodTillDate=$goodTillDateTimestamp';
+      }
+
+
+      String signature = generateSignature(query, apiSecret);
+      String params = '$query&signature=$signature';
+
+
+      final response = await http.post(
+        Uri.parse('$endpoint/fapi/v1/order?$params'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print(response.body);
+      } else {
+        print('Failed to fetch data: ${response.body}');
+      }
+    } catch (error) {
+      print('Error fetching data: $error');
+    }
+  }
+
+  static Future<String> getListenKey() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$endpoint/fapi/v1/listenKey'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        print(jsonData['listenKey']);
+        return jsonData['listenKey'];
+      } else {
+        throw Exception('Failed to fetch data: ${response.body}');
+      }
+    } catch (error) {
+      throw Exception('Error fetching data: $error');
+    }
+  }
+  
+  //area for trading feature
+
+
+
+  //area for account feature
+  static Future<String?> getServerTime() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/v3/time'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        print(jsonData['serverTime']);
+        return jsonData['serverTime'].toString();
+      } else {
+        print('Failed to fetch data: ${response.body}');
+      }
+    } catch (error) {
+      print('Error fetching data: $error');
+    }
+    return null;
+  }
+
+  static Future<void> getAccount() async {
+    String? timestamp = await getServerTime();
+
+    print(timestamp);
+    int recvWindow = 5000; // Adjust the recvWindow value as needed
+
+    String query = 'recvWindow=$recvWindow&timestamp=$timestamp';
+    String signature = generateSignature(query, apiSecret);
+    String params = '$query&signature=$signature';
+
+    try {
+      final response = await http.get(
+        Uri.parse('$endpoint/fapi/v2/account?$params'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print(response.body);
+      } else {
+        print('Failed to fetch data: ${response.body}');
+      }
+    } catch (error) {
+      print('Error fetching data: $error');
+    }
+  }
+
+  //area for account feature
+
+
+
+
+
+  // area for function
+  static String generateSignature(String data, String secret) {
+    var key = utf8.encode(secret);
+    var bytes = utf8.encode(data);
+
+    var hmac = Hmac(sha256, key); // Tạo một đối tượng HMAC sử dụng SHA256
+    var digest = hmac.convert(bytes); // Tạo chữ ký
+
+    return digest.toString(); // Trả về chữ ký dạng hex string
+  }
+  // area for function
+
+}
