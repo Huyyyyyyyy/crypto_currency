@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => FuturesData(),
       child: MaterialApp(
-        title: 'Crypto Tracker',
+        title: 'Final - Project',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,

@@ -290,12 +290,14 @@ class BinanceAPI {
     try{
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       final streamOfSocket = WebSocketManager(testNetEndpoint);
+      const recvWindow = 9999999;
 
       final requestId = const Uuid().v4();
       const method = 'account.balance';
       final params = {
         "apiKey": apiKey,
         "timestamp": timestamp,
+        "recvWindow": recvWindow
       };
 
       // Generate signature
@@ -404,5 +406,5 @@ class BinanceAPI {
     });
     return formattedParams.join('&');
   }
-
+  // area for function
 }
