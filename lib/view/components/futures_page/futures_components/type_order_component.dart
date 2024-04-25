@@ -40,7 +40,8 @@ class TypeOrderComponent extends StatelessWidget {
               // await BinanceAPI.getMarkPrice(futuresData.symbol);
               // await BinanceAPI.getAccount();
               // await BinanceAPI.getServerTime();
-              await BinanceAPI.getListenKey();
+              // await BinanceAPI.getListenKey();
+              await BinanceAPI.getWsAccountBalance();
             },
             child: Padding(
               padding: const EdgeInsets.all(0),

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketManager {
@@ -26,9 +25,9 @@ class WebSocketManager {
     _isOpen = false;
   }
 
+  //configure for websocket api
+  void sendRequest(String requestId, String method, Map<String, dynamic> params) {
 
-  void sendRequest(String method, Map<String, dynamic> params) {
-    final requestId = const Uuid().v4();
     final request = {
       'id': requestId,
       'method': method,
@@ -42,5 +41,6 @@ class WebSocketManager {
       callback(message);
     });
   }
+  //configure for websocket api
 
 }
