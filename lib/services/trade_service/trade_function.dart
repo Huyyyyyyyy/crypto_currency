@@ -12,7 +12,6 @@ class BinanceAPI {
   static const String baseUrl = 'https://api.binance.com';
   static const String testNetBaseWebSocket = 'wss://fstream.binancefuture.com';
   static const String testNetEndpoint = 'wss://testnet.binancefuture.com/ws-fapi/v1';
-  static const String testNetBase = 'wss://testnet.binancefuture.com/ws/';
 
 
 
