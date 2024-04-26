@@ -289,10 +289,12 @@ class BinanceAPI {
 
     try{
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      print(timestamp);
       final streamOfSocket = WebSocketManager(testNetEndpoint);
       const recvWindow = 9999999;
 
       final requestId = const Uuid().v4();
+      print(requestId);
       const method = 'account.balance';
       final params = {
         "apiKey": apiKey,
@@ -396,6 +398,7 @@ class BinanceAPI {
     // Step 2: Compute the signature
     String signature = generateSignature(signaturePayload, secretKey);
 
+    print(signature);
     return signature;
   }
 
