@@ -29,7 +29,7 @@ class FuturesData with ChangeNotifier {
 
   @override
   void dispose() {
-    disconnectWebSocket(); // Sử dụng phương thức mới để đóng kết nối
+    disconnectWebSocket();
     super.dispose();
   }
 
