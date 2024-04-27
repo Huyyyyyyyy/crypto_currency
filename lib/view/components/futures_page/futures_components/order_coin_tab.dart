@@ -1,3 +1,4 @@
+import 'package:crypto_currency/model/account_stream/account_data.dart';
 import 'package:crypto_currency/view/components/futures_page/futures_components/title_futures_m_component.dart';
 import 'package:crypto_currency/view/components/futures_page/futures_components/type_order_component.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,8 +13,8 @@ class OrderCoinTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FuturesData>(
-      builder: (context, futuresData, _) {
+    return Consumer2<FuturesData, AccountData>(
+      builder: (context, futuresData, accountData, _) {
         return Container(
           padding: const EdgeInsets.all(5),
           color: const Color(0xFF1F2630),
@@ -37,7 +38,7 @@ class OrderCoinTab extends StatelessWidget {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        TypeOrderComponent(futuresData: futuresData),
+                        TypeOrderComponent(futuresData: futuresData, accountData: accountData),
                       ],
                     )
                   ),
