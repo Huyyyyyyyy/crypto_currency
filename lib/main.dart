@@ -1,3 +1,4 @@
+import 'package:crypto_currency/model/account_stream/account_data.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/view/home/home_page.dart';
 import 'package:provider/provider.dart';
@@ -15,15 +16,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => FuturesData(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => FuturesData()),
+        ChangeNotifierProvider(create: (context) => AccountData())
+      ],
       child: MaterialApp(
         title: 'Final - Project',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: MyHomePage(),
+        home: const MyHomePage(),
       ),
     );
   }
