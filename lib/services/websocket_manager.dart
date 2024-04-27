@@ -26,7 +26,7 @@ class WebSocketManager {
   }
 
   //configure for websocket api
-  void sendRequest(String requestId, String method, Map<String, dynamic> params) {
+  void sendRequest(String requestId, String method, Map<String, dynamic> params) async {
 
     final request = {
       'id': requestId,

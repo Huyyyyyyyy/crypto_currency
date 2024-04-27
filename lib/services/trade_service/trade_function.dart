@@ -285,17 +285,13 @@ class BinanceAPI {
     }
   }
 
-  static Future<void> getWsAccountBalance() async {
-
+  static Future<String> getWsAccountInformation(WebSocketManager? streamOfSocket) async {
     try{
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      print(timestamp);
-      final streamOfSocket = WebSocketManager(testNetEndpoint);
       const recvWindow = 9999999;
 
       final requestId = const Uuid().v4();
-      print(requestId);
-      const method = 'account.balance';
+      const method = 'account.status';
       final params = {
         "apiKey": apiKey,
         "timestamp": timestamp,
@@ -305,18 +301,14 @@ class BinanceAPI {
       // Generate signature
       final signature = generateSignatureV2(params, apiSecret);
       params['signature'] = signature;
-      print(signature);
 
-      streamOfSocket.sendRequest(requestId, method, params);
+      streamOfSocket?.sendRequest(requestId, method, params);
+      return 'true';
 
-      streamOfSocket.listenForResponses((dynamic message) {
-        print('Received response: $message');
-        // Handle response here
-      });
     }catch(error){
       print('fail error: $error');
     }
-
+    return 'false';
   }
   //area for trading feature
 
@@ -393,12 +385,10 @@ class BinanceAPI {
     // Step 1: Construct the signature payload
     final sortedParams = Map.fromEntries(params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
     final signaturePayload = _formatParams(sortedParams);
-    print(signaturePayload);
 
     // Step 2: Compute the signature
     String signature = generateSignature(signaturePayload, secretKey);
 
-    print(signature);
     return signature;
   }
 
