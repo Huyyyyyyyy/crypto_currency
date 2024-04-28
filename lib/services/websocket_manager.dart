@@ -7,12 +7,8 @@ class WebSocketManager {
   bool _isOpen = false;
 
   WebSocketManager(this._url) {
-    if(_isOpen == false){
-      _channel = WebSocketChannel.connect(Uri.parse(_url));
-      _isOpen = true;
-    }else{
-
-    }
+    _channel = WebSocketChannel.connect(Uri.parse(_url));
+    _isOpen = true;
   }
 
   Stream get stream => _channel.stream;
