@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/services/websocket_manager.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../model/crypto_title.dart';
 
@@ -12,6 +13,7 @@ class PopularTab extends StatefulWidget {
   @override
   _PopularTabState createState() => _PopularTabState();
 }
+
 
 class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMixin {
   // Your existing code for building the list of cryptocurrencies...
@@ -28,7 +30,6 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
     WebSocketManager('wss://fstream.binance.com/ws/adausdt@ticker'),
     WebSocketManager('wss://fstream.binance.com/ws/bnbusdt@ticker'),
     WebSocketManager('wss://fstream.binance.com/ws/atomusdt@ticker'),
-    // Add more WebSocketManager instances for other coins if necessary
   ];
 
   List<String> coinNames = [
@@ -43,7 +44,6 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
     'Cardano',
     'BNB',
     'Cosmos'
-    // Add more coin names corresponding to your WebSocketManager instances
   ];
 
   List<String> coinIcons = [
@@ -58,7 +58,6 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
     'https://bin.bnbstatic.com/image/admin_mgs_image_upload/20201110/3bc4f3c3-c142-4379-9ebd-a72f332776bc.png',
     'https://bin.bnbstatic.com/image/admin_mgs_image_upload/20220218/94863af2-c980-42cf-a139-7b9f462a36c2.png',
     'https://bin.bnbstatic.com/image/admin_mgs_image_upload/20201110/b6b0ea3d-995f-4c16-b635-c76a21c0a726.png'
-    // Thêm URL của icon các coin tương ứng
   ];
 
 
@@ -72,13 +71,17 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
   }
 
 
+
+
+
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     // Call to super.build is needed when using KeepAlive mixin
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
+      children: [
         const Padding(
           padding: EdgeInsets.all(8.0),
           child: Row(
@@ -119,15 +122,23 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
         ),
         Expanded(
           child: ListView.builder(
+            key: ValueKey(const Uuid().v4()),
             itemCount: coins.length,
             itemBuilder: (context, index) {
+              if (index >= coins.length -1 || index >= coinNames.length -1 || index >= coinIcons.length -1) {
+                return const Divider(
+                  color: Colors.transparent,
+                );
+              }
+              final coin = coins[index];
               return StreamBuilder(
-                stream: coins[index].stream,
+                stream: coin.stream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final data = json.decode(snapshot.data.toString());
                     double priceChangePercentage = double.tryParse(data['P']) ?? 0.0;
                     return CryptoTile(
+                      key: ValueKey('${coins[index]}'),
                       symbol: data['s'],
                       name: coinNames[index],
                       price: '\$${data['c']}',
@@ -135,15 +146,15 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
                       icon: coinIcons[index],
                     );
                   } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
+                    return Text('${snapshot.error}');
                   }
-                  // Placeholder widget while the data is loading
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator());
                 },
               );
             },
-          )
+          ),
         ),
+
       ],
     );
   }

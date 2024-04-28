@@ -4,6 +4,7 @@ import 'package:crypto_currency/model/account_stream/account_data.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
 import 'package:crypto_currency/model/futures_data.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
+GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
 class TypeOrderComponent extends StatefulWidget {
   final FuturesData futuresData;
@@ -20,14 +21,19 @@ class TypeOrderComponent extends StatefulWidget {
 }
 
 class _TypeOrderComponentState extends State<TypeOrderComponent> {
+  final TextEditingController _controller = TextEditingController();
   late OrderModel orderModel;
+  bool _isChanging = false;
+  String addOrRemove = '';
 
 
+  //type order area
   void showTypeOrders(BuildContext context, List<String> options) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          key: UniqueKey(),
           title: const Text('Choose an Option'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -51,9 +57,56 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
     orderModel.type = option;
   }
 
+
+  Future<void> _incrementValue() async {
+    if (!_isChanging) {
+      try {
+        _isChanging = true;
+        double priceLimit = double.parse(_controller.text);
+        print('first price limit: $priceLimit');
+        priceLimit += 1;
+        print('after price limit: $priceLimit');
+        _controller.text = priceLimit.toString();
+        print('_controller.text: ${_controller.text}');
+      } catch (err) {
+        print(err);
+      } finally {
+        _isChanging = false;
+      }
+    }
+  }
+
+  Future<void> _decrementValue() async {
+    if (!_isChanging) {
+      try {
+        _isChanging = true;
+        double priceLimit = double.parse(_controller.text);
+        print('first price limit: $priceLimit');
+        priceLimit -= 1;
+        print('after price limit: $priceLimit');
+        _controller.text = priceLimit.toString();
+        print('_controller.text: ${_controller.text}');
+      } catch (err) {
+        print(err);
+      } finally {
+        _isChanging = false;
+      }
+    }
+  }
+
+
+  //type order area
+
+
+
+
+
   @override
   void initState() {
     super.initState();
+
+    _controller.text = widget.futuresData.priceMarket;
+
     orderModel = OrderModel(
       widget.futuresData.symbol,
       SideOrder.BUY,
@@ -64,6 +117,14 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
       widget.futuresData.priceMarket, // limit price
       widget.futuresData.priceMarket, // market price
     );
+
+
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -72,7 +133,7 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
     final List<String> typeOptions = ['Market', 'Limit'];
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       shrinkWrap: true,
       children: [
         Row(
@@ -170,7 +231,7 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
                           padding: const EdgeInsets.all(0),
                           alignment: Alignment.center,
                           child: Text(
-                            orderModel.type, // Hiển thị giá trị type của orderModel
+                            orderModel.type,
                             style: const TextStyle(
                               color: Color(0xFFf1f5f9),
                               fontWeight: FontWeight.w500,
@@ -189,6 +250,141 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
                 ),
               ),
             )
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            if(orderModel.type == 'Limit')
+              Expanded(
+                flex: 7,
+                child: Container(
+                  padding: const EdgeInsets.all(0),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF29313C),
+                    borderRadius: BorderRadius.circular(8)
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(45,2,30,2),
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              'Giá(USDT)',
+                              style: TextStyle(
+                                color: Color(0xFF64748b),
+                                fontSize: 12
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                              height: 18.0,
+                              width: 25,
+                              child: IconButton(
+                                padding: const EdgeInsets.fromLTRB(5,0,20,15),
+                                icon: const Icon(
+                                  Icons.remove,
+                                  color: Color(0xFF64748b),
+                                  size: 15,
+                                ),
+                                onPressed: _decrementValue,
+                              )
+                          ),
+                          SizedBox(
+                            width: 100,
+                            height: 25,
+                            child: Form(
+                              key: formKey,
+                              child: TextFormField(
+                                controller: _controller,
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                ),
+                                key: const ValueKey('priceLimitField'),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Color(0xFFe2e8f0),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500
+                                ),
+                                onChanged: (value){
+                                  orderModel.priceLimit = value;
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                              height: 18.0,
+                              width: 25,
+                              child: IconButton(
+                                padding: const EdgeInsets.fromLTRB(10,0,5,15),
+                                icon: const Icon(
+                                  Icons.add,
+                                  color: Color(0xFF64748b),
+                                  size: 15,
+                                ),
+                                onPressed: _incrementValue,
+                              )
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            if(orderModel.type == 'Limit')
+              Expanded(
+              flex: 3,
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(10, 0, 10,0 ),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF29313C),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.only(top: 15),
+                  child: Text(
+                    textAlign: TextAlign.center,
+                    'BBO',
+                    style: TextStyle(
+                      color: Color(0xFFe2e8f0),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if(orderModel.type == 'Market')
+              Padding(
+                padding: const EdgeInsets.all(0),
+                child: Container(
+                  width: 210,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF333B46),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(5, 12, 5, 12),
+                  child: Text(
+                    'Giá thị trường',
+                    key: UniqueKey(),
+                    style: const TextStyle(
+                      color: Color(0xFF4E5866),
+                      fontWeight: FontWeight.w500
+                    ),
+                  ),
+                ),
+              ),
           ],
         )
       ],
