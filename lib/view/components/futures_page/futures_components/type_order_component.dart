@@ -1,9 +1,12 @@
+import 'package:crypto_currency/services/custom_thumb_shape/custom_tick_mark_shape.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/model/account_stream/account_data.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
 import 'package:crypto_currency/model/futures_data.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
+import '../../../../services/custom_thumb_shape/custom_track_shape.dart';
+import '../../../../services/custom_thumb_shape/customer_thumb_shape_balance.dart';
 GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
 class TypeOrderComponent extends StatefulWidget {
@@ -22,9 +25,10 @@ class TypeOrderComponent extends StatefulWidget {
 
 class _TypeOrderComponentState extends State<TypeOrderComponent> {
   final TextEditingController _controller = TextEditingController();
+  final TextEditingController _balanceController = TextEditingController();
   late OrderModel orderModel;
   bool _isChanging = false;
-  String addOrRemove = '';
+  double _percentage = 0;
 
 
   //type order area
@@ -57,16 +61,15 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
     orderModel.type = option;
   }
 
-
   Future<void> _incrementValue() async {
     if (!_isChanging) {
       try {
         _isChanging = true;
         double priceLimit = double.parse(_controller.text);
         print('first price limit: $priceLimit');
-        priceLimit += 1;
+        priceLimit += 0.1;
         print('after price limit: $priceLimit');
-        _controller.text = priceLimit.toString();
+        _controller.text = priceLimit.toStringAsFixed(3);
         print('_controller.text: ${_controller.text}');
       } catch (err) {
         print(err);
@@ -79,13 +82,15 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
   Future<void> _decrementValue() async {
     if (!_isChanging) {
       try {
-        _isChanging = true;
-        double priceLimit = double.parse(_controller.text);
-        print('first price limit: $priceLimit');
-        priceLimit -= 1;
-        print('after price limit: $priceLimit');
-        _controller.text = priceLimit.toString();
-        print('_controller.text: ${_controller.text}');
+        if(double.parse(_controller.text) > 0.2){
+          _isChanging = true;
+          double priceLimit = double.parse(_controller.text);
+          print('first price limit: $priceLimit');
+          priceLimit -= 0.1;
+          print('after price limit: $priceLimit');
+          _controller.text = priceLimit.toStringAsFixed(3);
+          print('_controller.text: ${_controller.text}');
+        }
       } catch (err) {
         print(err);
       } finally {
@@ -94,9 +99,42 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
     }
   }
 
+  Future<void> _incrementBalance() async {
+    if (!_isChanging) {
+      try {
+        _isChanging = true;
+        if(_percentage >= 0 && _percentage < 100 ){
+          _percentage += 1;
+          double percentage = _percentage;
+          _balanceController.text = '${percentage.toStringAsFixed(0)}%';
+          print('_balanceController.text: ${_balanceController.text}');
+        }
+      } catch (err) {
+        print(err);
+      } finally {
+        _isChanging = false;
+      }
+    }
+  }
 
+  Future<void> _decrementBalance() async {
+    if (!_isChanging) {
+      try {
+        _isChanging = true;
+        if(_percentage != 0 ){
+          _percentage -= 1;
+          double percentage = _percentage;
+          _balanceController.text = '${percentage.toStringAsFixed(0)}%';
+          print('_balanceController.text: ${_balanceController.text}');
+        }
+      } catch (err) {
+        print(err);
+      } finally {
+        _isChanging = false;
+      }
+    }
+  }
   //type order area
-
 
 
 
@@ -105,7 +143,6 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
   void initState() {
     super.initState();
 
-    _controller.text = widget.futuresData.priceMarket;
 
     orderModel = OrderModel(
       widget.futuresData.symbol,
@@ -117,14 +154,24 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
       widget.futuresData.priceMarket, // limit price
       widget.futuresData.priceMarket, // market price
     );
-
+    _controller.text = widget.futuresData.priceMarket;
+    _balanceController.text = _percentage.toStringAsFixed(0);
 
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _balanceController.dispose();
     super.dispose();
+  }
+
+  void _updatePercentage(double value) {
+    setState(() {
+      _percentage = value;
+      double balancePercentage = _percentage;
+      _balanceController.text = '${balancePercentage.toStringAsFixed(0)}%';
+    });
   }
 
   @override
@@ -386,7 +433,145 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
                 ),
               ),
           ],
-        )
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(0),
+              child: Container(
+                width: 210,
+                height: 50,
+                padding: const EdgeInsets.all(0),
+                decoration: BoxDecoration(
+                    color: const Color(0xFF29313C),
+                    borderRadius: BorderRadius.circular(8)
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                            height: 18.0,
+                            width: 25,
+                            child: IconButton(
+                              padding: const EdgeInsets.fromLTRB(5,0,20,15),
+                              icon: const Icon(
+                                Icons.remove,
+                                color: Color(0xFF64748b),
+                                size: 15,
+                              ),
+                              onPressed: _decrementBalance,
+                            )
+                        ),
+                        SizedBox(
+                          width: 100,
+                          child: Form(
+                            child: TextFormField(
+                              controller: _balanceController,
+                              decoration: const InputDecoration(
+                                hintText: 'Số tiền',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey, // Màu của hintText
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                border: InputBorder.none,
+                              ),
+                              key: const ValueKey('percentageOfBalance'),
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Color(0xFFe2e8f0),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              onChanged: (value) {
+                                orderModel.priceLimit = value;
+                              },
+                            ),
+                          )
+
+                        ),
+                        SizedBox(
+                            height: 18.0,
+                            width: 17,
+                            child: IconButton(
+                              padding: const EdgeInsets.fromLTRB(0,0,5,15),
+                              icon: const Icon(
+                                Icons.add,
+                                color: Color(0xFF64748b),
+                                size: 15,
+                              ),
+                              onPressed: _incrementBalance,
+                            )
+                        ),
+                        const SizedBox(
+                          height: 20,
+                          width: 40,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 5),
+                            child: Text(
+                              'USDT',
+                              style: TextStyle(
+                                color: Color(0xFFe2e8f0),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 25,
+                          width: 5,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(0,0,10,10),
+                            child: Icon(
+                              Icons.arrow_drop_down,
+                              color: Color(0xFF64748b),
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+                child: SizedBox(
+                  width: 195,
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackShape: CustomSliderTrackShape(),
+                      activeTrackColor: const Color(0xFF94a3b8),
+                      trackHeight: 1.5,
+                      tickMarkShape: CustomTickMarkShape(),
+                      inactiveTrackColor: const Color(0xFF29313C),
+                      thumbShape: CustomSliderComponentShape(),
+                    ),
+                    child: SizedBox(
+                      width: 230,
+                      child: Slider(
+                        value: _percentage,
+                        onChanged: _updatePercentage,
+                        min: 0.0,
+                        max: 100.0,
+                        divisions: 4,
+                      ),
+                    ),
+                  ),
+                )
+            ),
+            const SizedBox(width: 10),
+          ],
+        ),
       ],
     );
   }
