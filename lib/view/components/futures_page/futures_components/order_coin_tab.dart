@@ -18,51 +18,53 @@ class OrderCoinTab extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(5),
           color: const Color(0xFF1F2630),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  FutureInfoTile(
-                    symbol: futuresData.symbol,
-                    volume: futuresData.volume,
-                    price: futuresData.price,
-                    priceChangePercentage: futuresData.priceChangePercentage,
-                  ),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children:  [
-                  Expanded(
-                    flex: 6,
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        TypeOrderComponent(futuresData: futuresData, accountData: accountData),
-                      ],
-                    )
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        FundingComponent(
-                          fundingRates: futuresData.fundingRates,
-                          nextFundingTime: futuresData.nextFundingTime,
-                        ),
-                        LivePriceUpdateTile(
-                          prices: futuresData.livePrices,
-                          quantity: futuresData.quantity,
-                          lastPrice: futuresData.lastPrice,
-                          lowPrice: futuresData.lowPrice,
-                        )
-                      ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    FutureInfoTile(
+                      symbol: futuresData.symbol,
+                      volume: futuresData.volume,
+                      price: futuresData.price,
+                      priceChangePercentage: futuresData.priceChangePercentage,
                     ),
-                  )
-                ],
-              )
-            ],
+                  ],
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:  [
+                    Expanded(
+                      flex: 6,
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          TypeOrderComponent(futuresData: futuresData, accountData: accountData),
+                        ],
+                      )
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          FundingComponent(
+                            fundingRates: futuresData.fundingRates,
+                            nextFundingTime: futuresData.nextFundingTime,
+                          ),
+                          LivePriceUpdateTile(
+                            prices: futuresData.livePrices,
+                            quantity: futuresData.quantity,
+                            lastPrice: futuresData.lastPrice,
+                            lowPrice: futuresData.lowPrice,
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                )
+              ],
+            ),
           ),
         );
       },
