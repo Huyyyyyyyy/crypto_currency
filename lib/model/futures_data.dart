@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:crypto_currency/services/trade_service/trade_function.dart';
 import 'package:crypto_currency/services/websocket_manager.dart';
 import 'package:crypto_currency/services/global_setting.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,8 @@ class FuturesData with ChangeNotifier {
 
   String priceMarket = '0.0';
 
+  String maxPrice = '0.0';
+
   FuturesData() {
     connectAndUpdateData();
   }
@@ -37,7 +40,7 @@ class FuturesData with ChangeNotifier {
       // Làm tròn output đến 3 chữ số thập phân
       double output = double.tryParse(newPrice) ?? 0.0;
       String formattedOutput = output.toStringAsFixed(3);
-      if(livePrices.length < 14){
+      if(livePrices.length < 20){
         livePrices.add(formattedOutput);
       }else{
         livePrices.removeAt(0);
@@ -48,19 +51,16 @@ class FuturesData with ChangeNotifier {
   void updateAggTrade(String newQuantityString, String newPriceString){
     double newQuantity = double.tryParse(newQuantityString) ?? 0.0;
     double newPrice = double.tryParse(newPriceString) ?? 0.0;
-    double output = newQuantity * newPrice; // Giả sử 'price' là giá trị của 1 đơn vị trong tiền đô (USD)
+    double output = newQuantity * newPrice;
 
-    // Làm tròn output đến 3 chữ số thập phân
     String formattedOutput = output.toStringAsFixed(3);
 
-    // Kiểm tra xem output có lớn hơn hoặc bằng 1000 không
     if (output >= 1000) {
-      // Chuyển đổi output thành K và chỉ giữ 2 chữ số thập phân
       double outputInK = output / 1000;
       formattedOutput = '${outputInK.toStringAsFixed(2)}K';
     }
 
-    if (quantity.length < 14) {
+    if (quantity.length < 20) {
       quantity.add(formattedOutput);
     } else {
       quantity.removeAt(0);
@@ -70,27 +70,27 @@ class FuturesData with ChangeNotifier {
 
 
   void disconnectWebSocket() {
-    webSocketManager?.close(); // Đóng kết nối WebSocket hiện tại
+    webSocketManager?.close();
     websocketForFundingTime?.close();
     websocketForAggTrade?.close();
   }
 
 
   void connectAndUpdateData() async {
-    disconnectWebSocket(); // Đảm bảo đóng kết nối cũ trước khi tạo mới
+    disconnectWebSocket();
 
     String url = await GlobalSettings.getUrl();
     String urlFundingTime = await GlobalSettings.getUrlFundingTime();
     String urlAggTrade = await GlobalSettings.getUrlAggTrade();
 
-    webSocketManager = WebSocketManager(url); // Lưu trữ tham chiếu mới
+    webSocketManager = WebSocketManager(url);
     websocketForFundingTime = WebSocketManager(urlFundingTime);
     websocketForAggTrade = WebSocketManager(urlAggTrade);
 
     await webSocketManager?.stream.listen((data) {
       final jsonData = json.decode(data);
       // Cập nhật giả định các trường dữ liệu từ jsonData
-      symbol = jsonData['s']; // Assuming these fields exist
+      symbol = jsonData['s'];
       volume = '\$${jsonData['q']}';
       price = '\$${jsonData['c']}';
       priceChangePercentage = double.tryParse(jsonData['P'].toString()) ?? 0.0;
@@ -143,6 +143,31 @@ class FuturesData with ChangeNotifier {
       // Xử lý khi kết thúc WebSocket
       print('socket agg trade close');
     });
+
+
+    //update exchange Information
+    String exchangeInfo = await BinanceAPI.getExchangeInfo(symbol);
+
+    final jsonData = json.decode(exchangeInfo);
+
+    if (jsonData.containsKey('symbols')) {
+      List<dynamic> symbols = jsonData['symbols'];
+      if (symbols.isNotEmpty) {
+        Map<dynamic, dynamic> symbolInfo = symbols.firstWhere((symbol) => symbol['symbol'] == this.symbol, orElse: () => {});
+        if (symbolInfo.isNotEmpty) {
+          List<dynamic> filters = symbolInfo['filters'];
+          Map<dynamic, dynamic> priceFilter = filters.firstWhere((filter) => filter['filterType'] == 'PRICE_FILTER', orElse: () => {});
+          double doubleMaxPrice = double.parse(priceFilter['maxPrice']);
+          maxPrice = doubleMaxPrice.toStringAsFixed(1);
+        } else {
+          print('Symbol not found');
+        }
+      } else {
+        print('No symbols found');
+      }
+    } else {
+      print('No symbols key found');
+    }
 
   }
 }
