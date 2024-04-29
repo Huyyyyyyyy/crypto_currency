@@ -50,6 +50,7 @@ class _FuturesPageState extends State<FuturesPage> with SingleTickerProviderStat
             labelPadding: const EdgeInsets.symmetric(horizontal: 8.0),
             dividerColor: const Color(0xFF334155),
             indicatorColor: Colors.transparent,
+            splashFactory: NoSplash.splashFactory,
             tabs: const [
               Tab(
                   child: Text(

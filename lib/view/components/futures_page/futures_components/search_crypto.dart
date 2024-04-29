@@ -9,7 +9,7 @@ class CryptoSearchDialog extends StatefulWidget {
 }
 
 class _CryptoSearchDialogState extends State<CryptoSearchDialog> {
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,7 @@ import 'package:crypto_currency/services/global_setting.dart';
 import 'package:flutter/material.dart';
 
 class FuturesData with ChangeNotifier {
-  String symbol = 'BTC';
+  String symbol = 'BTCUSDT';
   String volume = 'N/A';
   String price = 'N/A';
   double priceChangePercentage = 0.0;
@@ -25,6 +25,7 @@ class FuturesData with ChangeNotifier {
   String priceMarket = '0.0';
 
   String maxPrice = '0.0';
+  String minprice = '0.0';
 
   FuturesData() {
     connectAndUpdateData();
@@ -148,6 +149,7 @@ class FuturesData with ChangeNotifier {
     //update exchange Information
     String exchangeInfo = await BinanceAPI.getExchangeInfo(symbol);
 
+
     final jsonData = json.decode(exchangeInfo);
 
     if (jsonData.containsKey('symbols')) {
@@ -158,7 +160,9 @@ class FuturesData with ChangeNotifier {
           List<dynamic> filters = symbolInfo['filters'];
           Map<dynamic, dynamic> priceFilter = filters.firstWhere((filter) => filter['filterType'] == 'PRICE_FILTER', orElse: () => {});
           double doubleMaxPrice = double.parse(priceFilter['maxPrice']);
+          double doubleMinPrice = double.parse(priceFilter['minPrice']);
           maxPrice = doubleMaxPrice.toStringAsFixed(1);
+          minprice = doubleMinPrice.toStringAsFixed(1);
         } else {
           print('Symbol not found');
         }

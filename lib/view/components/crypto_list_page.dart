@@ -1,8 +1,5 @@
-import 'dart:ui';
-
 import 'package:crypto_currency/view/components/tab_in_list_page/popular_tab.dart';
 import 'package:crypto_currency/view/components/tab_in_list_page/wishlist_tab.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CryptoListPage extends StatefulWidget {
@@ -105,8 +102,10 @@ class _CryptoListPageState extends State<CryptoListPage> with SingleTickerProvid
                 indicatorColor: Colors.amber,
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.grey,
+                splashFactory: NoSplash.splashFactory,
                 dividerColor: Colors.transparent,
                 tabAlignment: TabAlignment.start,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 8.0),
                 tabs: [
                   _customTab('Phổ biến'),
                   _customTab('Danh sách yêu thích'),
