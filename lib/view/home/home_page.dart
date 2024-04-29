@@ -79,38 +79,44 @@ class _MyHomePageState extends State<MyHomePage> {
           // Other tabs here...
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
-        backgroundColor: const Color(0xFF1F2630),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: const Color(0xFF475569),
-        items:  const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Trang chủ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.poll),
-            label: 'Thị trường',
-          ),
-          // Assuming the lightning bolt icon represents 'Discover'
-          BottomNavigationBarItem(
-            icon: Icon(Icons.transform),
-            label: 'Giao dịch',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.whatshot),
-            label: 'Futures',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.wallet),
-            label: 'Ví',
-          ),
-        ],
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+      bottomNavigationBar: Theme(
+        data: ThemeData(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent
+        ),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _currentIndex,
+          onTap: _onItemTapped,
+          backgroundColor: const Color(0xFF1F2630),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: const Color(0xFF475569),
+          items:  const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Trang chủ',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.poll),
+              label: 'Thị trường',
+            ),
+            // Assuming the lightning bolt icon represents 'Discover'
+            BottomNavigationBarItem(
+              icon: Icon(Icons.transform),
+              label: 'Giao dịch',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.whatshot),
+              label: 'Futures',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.wallet),
+              label: 'Ví',
+            ),
+          ],
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
