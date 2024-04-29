@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../services/custom_dot_line_border/custom_dot_line_border.dart';
+
 class LivePriceUpdateTile extends StatelessWidget {
   final List<String> prices;
   final List<String> quantity;
@@ -42,8 +44,7 @@ class LivePriceUpdateTile extends StatelessWidget {
                           fontSize: 11.5,
                         ),
                       ),
-                      const SizedBox(height: 8), // Khoảng cách giữa nhãn và danh sách giá
-                      // Danh sách giá
+                      const SizedBox(height: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: prices.sublist(0, prices.length ~/ 2).map((price) => Text(
@@ -51,7 +52,8 @@ class LivePriceUpdateTile extends StatelessWidget {
                           style: const TextStyle(
                               color: Color(0xFFe11d48),
                               fontWeight : FontWeight.w500,
-                              fontSize: 11.5,
+                              fontSize: 13.5,
+                              height: 1.5
                           ),
                         )).toList(),
                       ),
@@ -75,15 +77,16 @@ class LivePriceUpdateTile extends StatelessWidget {
                           fontSize: 11.5,
                         ),
                       ),
-                      const SizedBox(height: 8), // Khoảng cách giữa nhãn và danh sách giá
+                      const SizedBox(height: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: quantity.sublist(0, quantity.length ~/ 2).map((quantity) => Text(
                           quantity,
                           style: const TextStyle(
                               color: Color(0xFFe2e8f0),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w500
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                              height: 1.6
                           ),
                         )).toList(),
                       ),
@@ -100,8 +103,8 @@ class LivePriceUpdateTile extends StatelessWidget {
                   double.parse(lastPrice).toStringAsFixed(3),
                   style : const TextStyle(
                   color: Color(0xFF2EBD86),
-                  fontSize : 16,
-                  fontWeight: FontWeight.w500
+                  fontSize : 20,
+                  fontWeight: FontWeight.w600
                 )
               ),
             ],
@@ -109,13 +112,27 @@ class LivePriceUpdateTile extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                  double.parse(lowPrice).toStringAsFixed(3),
-                  style : const TextStyle(
-                      color: Color(0xFF94a3b8),
-                      fontSize : 13,
-                      fontWeight: FontWeight.w400
-                  )
+              Container(
+                padding: const EdgeInsets.all(0),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: DottedBorderUnderText(
+                        color: const Color(0xFFcbd5e1),
+                        strokeWidth: 0.8,
+                        gapWidth: 1,
+                        child: Text(
+                        double.parse(lowPrice).toStringAsFixed(3),
+                          style : const TextStyle(
+                              color: Color(0xFF94a3b8),
+                              fontSize : 13,
+                              fontWeight: FontWeight.w400
+                          )
+                        ),
+                    ),
+                    )
+                  ],
+                ),
               ),
             ],
           ),
@@ -136,7 +153,8 @@ class LivePriceUpdateTile extends StatelessWidget {
                           style: const TextStyle(
                             color: Color(0xFF2EBD86),
                             fontWeight : FontWeight.w500,
-                            fontSize: 11.5,
+                            fontSize: 13,
+                            height: 1.5
                           ),
                         )).toList(),
                       ),
@@ -157,8 +175,9 @@ class LivePriceUpdateTile extends StatelessWidget {
                           quantity,
                           style: const TextStyle(
                               color: Color(0xFFe2e8f0),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                              height: 1.5
                           ),
                         )).toList(),
                       ),

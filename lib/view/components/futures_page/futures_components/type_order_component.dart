@@ -1,5 +1,5 @@
+import 'package:crypto_currency/services/custom_checkbox/custom_checkbox.dart';
 import 'package:crypto_currency/services/custom_thumb_shape/custom_tick_mark_shape.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/model/account_stream/account_data.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
@@ -29,6 +29,8 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
   late OrderModel orderModel;
   bool _isChanging = false;
   double _percentage = 0;
+  bool showTpSlOptions = false;
+  bool showOnlyDecrease = false;
 
 
   //type order area
@@ -66,11 +68,8 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
       try {
         _isChanging = true;
         double priceLimit = double.parse(_controller.text);
-        print('first price limit: $priceLimit');
         priceLimit += 0.1;
-        print('after price limit: $priceLimit');
         _controller.text = priceLimit.toStringAsFixed(3);
-        print('_controller.text: ${_controller.text}');
       } catch (err) {
         print(err);
       } finally {
@@ -85,11 +84,8 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
         if(double.parse(_controller.text) > 0.2){
           _isChanging = true;
           double priceLimit = double.parse(_controller.text);
-          print('first price limit: $priceLimit');
           priceLimit -= 0.1;
-          print('after price limit: $priceLimit');
           _controller.text = priceLimit.toStringAsFixed(3);
-          print('_controller.text: ${_controller.text}');
         }
       } catch (err) {
         print(err);
@@ -107,7 +103,6 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
           _percentage += 1;
           double percentage = _percentage;
           _balanceController.text = '${percentage.toStringAsFixed(0)}%';
-          print('_balanceController.text: ${_balanceController.text}');
         }
       } catch (err) {
         print(err);
@@ -125,7 +120,6 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
           _percentage -= 1;
           double percentage = _percentage;
           _balanceController.text = '${percentage.toStringAsFixed(0)}%';
-          print('_balanceController.text: ${_balanceController.text}');
         }
       } catch (err) {
         print(err);
@@ -134,15 +128,20 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
       }
     }
   }
+
+  void _updatePercentage(double value) {
+    setState(() {
+      _percentage = value;
+      double balancePercentage = _percentage;
+      _balanceController.text = '${balancePercentage.toStringAsFixed(0)}%';
+    });
+  }
   //type order area
-
-
 
 
   @override
   void initState() {
     super.initState();
-
 
     orderModel = OrderModel(
       widget.futuresData.symbol,
@@ -166,13 +165,6 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
     super.dispose();
   }
 
-  void _updatePercentage(double value) {
-    setState(() {
-      _percentage = value;
-      double balancePercentage = _percentage;
-      _balanceController.text = '${balancePercentage.toStringAsFixed(0)}%';
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -547,6 +539,7 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
               padding: const EdgeInsets.only(left: 10),
                 child: SizedBox(
                   width: 195,
+                  height: 50,
                   child: SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       trackShape: CustomSliderTrackShape(),
@@ -569,9 +562,286 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
                   ),
                 )
             ),
-            const SizedBox(width: 10),
           ],
         ),
+        Row(
+          children: [
+            CustomCheckbox(
+              isChecked: showTpSlOptions,
+              onChanged: (value){
+                setState(() {
+                  showTpSlOptions = value;
+                });
+              },
+            ),
+            const Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Text(
+                'TP/SL',
+                style: TextStyle(
+                  color: Color(0xFFcbd5e1),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13
+                ),
+              ),
+            ),
+            if(showTpSlOptions)
+              Container(
+                padding: const EdgeInsets.only(left: 65),
+                child: const SizedBox(
+                  height: 25,
+                  width:90,
+                  child: Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Row(
+                      children:[
+                        Text(
+                          'Nâng cao',
+                          style: TextStyle(
+                              color: Color(0xFFe2e8f0),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          color: Color(0xFF64748b),
+                        ),
+                      ]
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        if(showTpSlOptions)
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Container(
+                  width: 210,
+                  height: 50,
+                  padding: const EdgeInsets.all(0),
+                  decoration: BoxDecoration(
+                      color: const Color(0xFF29313C),
+                      borderRadius: BorderRadius.circular(8)
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(
+                              width: 140,
+                              child: Form(
+                                child: TextFormField(
+                                  decoration: const InputDecoration(
+                                    hintText: 'Chốt lời',
+                                    hintStyle: TextStyle(
+                                      color: Color(0xFF64748b), // Màu của hintText
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    border: InputBorder.none,
+                                  ),
+                                  key: const ValueKey('takeProfit'),
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Color(0xFFe2e8f0),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  onChanged: (value) {
+                                    print('set take profit at: $value');
+                                  },
+                                ),
+                              )
+                          ),
+                          Container(
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                left: BorderSide(
+                                  color: Color(0xFF64748b),
+                                  width: 0.8,
+                                ),
+                              ),
+                            ),
+                            child: const SizedBox(
+                              height: 20,
+                              width: 45,
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 5),
+                                child: Text(
+                                  'Gần ...',
+                                  style: TextStyle(
+                                      color: Color(0xFFe2e8f0),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 25,
+                            width: 5,
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(0,0,10,10),
+                              child: Icon(
+                                Icons.arrow_drop_down,
+                                color: Color(0xFF64748b),
+                              ),
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        if(showTpSlOptions)
+          Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Container(
+                width: 210,
+                height: 50,
+                padding: const EdgeInsets.all(0),
+                decoration: BoxDecoration(
+                    color: const Color(0xFF29313C),
+                    borderRadius: BorderRadius.circular(8)
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                            width: 140,
+                            child: Form(
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                  hintText: 'Cắt lỗ',
+                                  hintStyle: TextStyle(
+                                    color: Color(0xFF64748b), // Màu của hintText
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  border: InputBorder.none,
+                                ),
+                                key: const ValueKey('stopLoss'),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Color(0xFFe2e8f0),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                onChanged: (value) {
+                                  print('set stop loss at: $value');
+                                },
+                              ),
+                            )
+                        ),
+                        Container(
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              left: BorderSide(
+                                color: Color(0xFF64748b),
+                                width: 0.8,
+                              ),
+                            ),
+                          ),
+                          child: const SizedBox(
+                            height: 20,
+                            width: 45,
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 5),
+                              child: Text(
+                                'Gần ...',
+                                style: TextStyle(
+                                    color: Color(0xFFe2e8f0),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 25,
+                          width: 5,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(0,0,10,10),
+                            child: Icon(
+                              Icons.arrow_drop_down,
+                              color: Color(0xFF64748b),
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            CustomCheckbox(
+              isChecked: showOnlyDecrease,
+              onChanged: (value){
+                showOnlyDecrease = value;
+              },
+            ),
+            const Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Text(
+                'Chỉ giảm',
+                style: TextStyle(
+                    color: Color(0xFFcbd5e1),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13
+                ),
+              ),
+            ),
+            if(showOnlyDecrease)
+            Container(
+                padding: const EdgeInsets.only(left: 80),
+                child: const SizedBox(
+                  height: 25,
+                  width:50,
+                  child: Padding(
+                    padding: EdgeInsets.all(0),
+                    child: Row(
+                        children:[
+                          Text(
+                            'GTC',
+                            style: TextStyle(
+                                color: Color(0xFFe2e8f0),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            color: Color(0xFF64748b),
+                          ),
+                        ]
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
       ],
     );
   }
