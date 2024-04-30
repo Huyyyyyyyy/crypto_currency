@@ -4,7 +4,7 @@ import 'package:crypto_currency/services/trade_service/trade_function.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/model/account_stream/account_data.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
-import 'package:crypto_currency/model/futures_data.dart';
+import 'package:crypto_currency/model/futures_currency_stream/futures_data.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
 import 'package:flutter/services.dart';
 import '../../../../services/custom_thumb_shape/custom_track_shape.dart';

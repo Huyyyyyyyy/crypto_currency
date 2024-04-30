@@ -1,13 +1,10 @@
-import 'dart:ui';
-
+import 'package:crypto_currency/view/components/futures_page/all_positions/all_positions.dart';
 import 'package:crypto_currency/view/components/futures_page/futures_components/title_futures_m_component.dart';
 import 'package:crypto_currency/view/components/futures_page/futures_components/type_order_component.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../../model/account_stream/account_data.dart';
-import '../../../../model/futures_data.dart';
+import '../../../../model/futures_currency_stream/futures_data.dart';
 import 'funding_component.dart';
 import 'live_price.dart';
 
@@ -33,32 +30,13 @@ class _OrderCoinTabState extends State<OrderCoinTab> with SingleTickerProviderSt
     super.dispose();
   }
 
-  Tab _customTab(String title) {
-    return Tab(
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF1F2630),
-        ),
-        child: Align(
-          alignment: Alignment.center,
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 16
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<FuturesData, AccountData>(
       builder: (context, futuresData, accountData, _) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+          padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
           child: NestedScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -120,45 +98,58 @@ class _OrderCoinTabState extends State<OrderCoinTab> with SingleTickerProviderSt
                   children: [
                     Expanded(
                       child: TabBar(
-                        tabs: <Widget> [
-                          Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: _customTab('Lệnh mở (0)'),
+                        tabAlignment: TabAlignment.start,
+                        padding: const EdgeInsets.only(left: 5),
+                        controller: _tabController,
+                        isScrollable: true,
+                        unselectedLabelColor: const Color(0xFF858E9C),
+                        labelColor: Colors.white,
+                        labelPadding: const EdgeInsets.only(right: 20),
+                        dividerColor: const Color(0xFF334155),
+                        indicatorColor: const Color(0xFFF1B90C),
+                        splashFactory: NoSplash.splashFactory,
+                        indicatorWeight: 0.5,
+                        tabs: [
+                          const Tab(
+                            child: Text(
+                              'Lệnh mở (0)',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18
+                              ),
+                            ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: _customTab('Vị thế (0)'),
+                          Tab(
+                            child: Text(
+                              'Vị thế (${accountData.currentPositions.length})',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18
+                              ),
+                            ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: _customTab('Lưới hợp đồng tương lai'),
+                          const Tab(
+                            child: Text(
+                              'Lưới hợp đồng tương lai',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18
+                              ),
+                            ),
                           ),
                         ],
-                        isScrollable: true,
-                        controller: _tabController,
-                        splashFactory: NoSplash.splashFactory,
-                        indicatorColor: Colors.amber,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: const Color(0xFF858E9D),
-                        dividerColor: Colors.transparent,
-                        dividerHeight: 0.2,
-                        tabAlignment: TabAlignment.start,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 8),
-              ),
             ],
             body: TabBarView(
               controller: _tabController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: const [
-                Center(child: Text('Nội dung tab Lệnh mở')),
-                Center(child: Text('Nội dung tab Vị thế')),
-                Center(child: Text('Nội dung tab Lưới hợp đồng tương lai')),
+              children: [
+                const Center(child: Text('Nội dung tab Lệnh mở')),
+                AllPositions(positions: accountData.currentPositions),
+                const Center(child: Text('Nội dung tab Lưới hợp đồng tương lai')),
               ],
             ),
           ),
