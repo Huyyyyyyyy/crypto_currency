@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:crypto_currency/services/websocket_manager.dart';
+import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../model/crypto_title.dart';
+import '../futures_page/futures_components/crypto_title.dart';
 
 
 

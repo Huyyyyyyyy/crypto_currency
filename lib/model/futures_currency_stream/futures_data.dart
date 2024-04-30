@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:crypto_currency/services/trade_service/trade_function.dart';
-import 'package:crypto_currency/services/websocket_manager.dart';
-import 'package:crypto_currency/services/global_setting.dart';
+import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
+import 'package:crypto_currency/services/global_key_storage/global_setting.dart';
 import 'package:flutter/material.dart';
 
 class FuturesData with ChangeNotifier {

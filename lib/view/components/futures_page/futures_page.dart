@@ -45,7 +45,7 @@ class _FuturesPageState extends State<FuturesPage> with SingleTickerProviderStat
             padding: const EdgeInsets.only(left: 5),
             controller: _tabController,
             isScrollable: true,
-            unselectedLabelColor: const Color(0xFF475569),
+            unselectedLabelColor: const Color(0xFF858E9C),
             labelColor: Colors.white,
             labelPadding: const EdgeInsets.symmetric(horizontal: 8.0),
             dividerColor: const Color(0xFF334155),
