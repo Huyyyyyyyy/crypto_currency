@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:crypto_currency/model/crypto_search.dart';
-import 'package:crypto_currency/services/global_setting.dart';
+import 'package:crypto_currency/view/components/futures_page/futures_components/crypto_search.dart';
+import 'package:crypto_currency/services/global_key_storage/global_setting.dart';
 import 'package:flutter/material.dart';
-import 'package:crypto_currency/services/websocket_manager.dart';
+import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
 import 'package:provider/provider.dart';
-import '../../../../model/futures_data.dart';
+import '../../../../model/futures_currency_stream/futures_data.dart';
 
 
 class ListSearch extends StatefulWidget {

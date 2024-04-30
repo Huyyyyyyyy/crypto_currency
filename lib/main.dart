@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:crypto_currency/view/home/home_page.dart';
 import 'package:provider/provider.dart';
 
-import 'model/futures_data.dart';
+import 'model/futures_currency_stream/futures_data.dart';
 
 
 void main() {

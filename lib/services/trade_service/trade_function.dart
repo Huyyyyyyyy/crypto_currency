@@ -3,7 +3,7 @@ import 'package:crypto/crypto.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
 import 'package:crypto_currency/services/trade_service/filter_variables.dart';
-import 'package:crypto_currency/services/websocket_manager.dart';
+import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
@@ -16,8 +16,7 @@ class BinanceAPI {
   static const String testNetEndpoint = 'wss://testnet.binancefuture.com/ws-fapi/v1';
 
 
-
-  //area for trading feature
+  //area for trading feature (base API)
   static Future<void> getBalance() async{
     try{
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
@@ -284,7 +283,10 @@ class BinanceAPI {
       throw Exception('Error fetching data: $error');
     }
   }
+  //area for trading feature (base API)
 
+
+  //area for positions (WebSocket API)
   static Future<String> getWsAccountInformation(WebSocketManager? streamOfSocket) async {
     try{
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
@@ -303,15 +305,41 @@ class BinanceAPI {
       params['signature'] = signature;
 
       streamOfSocket?.sendRequest(requestId, method, params);
-      return 'true';
+      return requestId;
 
     }catch(error){
       print('fail error: $error');
     }
-    return 'false';
+    return 'information account : false';
   }
-  //area for trading feature
 
+  static Future<String> getWsAccountPositions(WebSocketManager? streamOfSocket) async {
+    try{
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      const recvWindow = 9999999;
+
+      final requestId = const Uuid().v4();
+      const method = 'account.position';
+      final params = {
+        "apiKey": apiKey,
+        "timestamp": timestamp,
+        "recvWindow": recvWindow
+      };
+
+      // Generate signature
+      final signature = generateSignatureV2(params, apiSecret);
+      params['signature'] = signature;
+
+
+      streamOfSocket?.sendRequest(requestId, method, params);
+      return requestId;
+
+    }catch(error){
+      print('fail error: $error');
+    }
+    return 'position account : false';
+  }
+  //area for positions (WebSocket API)
 
 
   //area for account feature
@@ -370,7 +398,7 @@ class BinanceAPI {
 
 
 
-  // area for function
+  // area for function format
   static String generateSignature(String data, String secret) {
     var key = utf8.encode(secret);
     var bytes = utf8.encode(data);
@@ -399,5 +427,5 @@ class BinanceAPI {
     });
     return formattedParams.join('&');
   }
-  // area for function
+  // area for function format
 }
