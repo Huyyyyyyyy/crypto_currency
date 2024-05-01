@@ -35,7 +35,7 @@ class _AllPositionsState extends State<AllPositions> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(5,0,5,5),
       child: ListView(
-        physics: const NeverScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         children: [
           Container(
             padding: const EdgeInsets.only(bottom: 10),
@@ -97,9 +97,9 @@ class _AllPositionsState extends State<AllPositions> {
           Padding(
             padding: const EdgeInsets.all(0),
             child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.6,
+              height: MediaQuery.of(context).size.height * 0.8,
               child: ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: widget.positions.length,
                 itemBuilder: (context, index) {
                   PositionStreams position = widget.positions[index];

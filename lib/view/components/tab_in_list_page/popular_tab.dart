@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
 import 'package:uuid/uuid.dart';
@@ -126,12 +128,14 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
             itemCount: coins.length,
             itemBuilder: (context, index) {
               if (index >= coins.length -1 || index >= coinNames.length -1 || index >= coinIcons.length -1) {
-                return const Divider(
+                return Divider(
+                  key: UniqueKey(),
                   color: Colors.transparent,
                 );
               }
               final coin = coins[index];
               return StreamBuilder(
+                key: UniqueKey(),
                 stream: coin.stream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -146,9 +150,15 @@ class _PopularTabState extends State<PopularTab> with AutomaticKeepAliveClientMi
                       icon: coinIcons[index],
                     );
                   } else if (snapshot.hasError) {
-                    return Text('${snapshot.error}');
+                    return Text(
+                        key: UniqueKey(),
+                        '${snapshot.error}'
+                    );
                   }
-                  return Center(child: CircularProgressIndicator());
+                  return Center(
+                      key: UniqueKey(),
+                      child: const CircularProgressIndicator()
+                  );
                 },
               );
             },

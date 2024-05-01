@@ -222,10 +222,12 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
   Widget build(BuildContext context) {
     final List<String> itemTexts = ['Cross', '20x', 'Bán'];
     final List<String> typeOptions = ['Market', 'Limit'];
+    (
+        orderModel.priceLimit == ''
+    )?  orderModel.priceLimit = '0.0' : null;
 
     (
         widget.futuresData.symbol != orderModel.symbol
-        || double.parse(orderModel.priceLimit) == 0.0
         || double.parse(orderModel.priceMarket) == 0.0
     ) ? _updateOrderModel() : null;
 
@@ -1000,8 +1002,25 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
           Row(
             children: [
               ElevatedButton(
-                onPressed: (){
+                onPressed: () async {
                   print('open Long position');
+                  orderModel.side = SideOrder.BUY;
+                  orderModel.positionSide = PositionSide.LONG;
+                  orderModel.type = orderModel.type.toUpperCase();
+                  orderModel.quantity = BinanceAPI.calculateQuantityPerCost(
+                      double.parse(orderModel.priceLimit),
+                      double.parse(_costBaseOnPercentageForLong.toString()));
+                  orderModel.priceMarket = widget.futuresData.priceMarket;
+                  await BinanceAPI.createNewOrderFuture(orderModel);
+                  // print(orderModel.symbol);
+                  // print(orderModel.side);
+                  // print(orderModel.type);
+                  // print(orderModel.timeInforce);
+                  // print(orderModel.quantity);
+                  // print(orderModel.priceMarket);
+                  // print(orderModel.priceLimit);
+                  // print(orderModel.timestamp);
+                  // print(orderModel.recvWindow);
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -1092,8 +1111,25 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
           Row(
             children: [
               ElevatedButton(
-                onPressed: (){
+                onPressed: () async{
                   print('open Short position');
+                  orderModel.side = SideOrder.SELL;
+                  orderModel.positionSide = PositionSide.SHORT;
+                  orderModel.type = orderModel.type.toUpperCase();
+                  orderModel.priceMarket = widget.futuresData.priceMarket;
+                  orderModel.quantity = BinanceAPI.calculateQuantityPerCost(
+                      (orderModel.type == TypeOrder.MARKET) ? double.parse(orderModel.priceMarket) : double.parse(orderModel.priceLimit),
+                      double.parse(_costBaseOnPercentageForShort.toString()));
+                  await BinanceAPI.createNewOrderFuture(orderModel);
+                  // print(orderModel.symbol);
+                  // print(orderModel.side);
+                  // print(orderModel.type);
+                  // print(orderModel.timeInforce);
+                  // print(orderModel.quantity);
+                  // print(orderModel.priceMarket);
+                  // print(orderModel.priceLimit);
+                  // print(orderModel.timestamp);
+                  // print(orderModel.recvWindow);
                 },
                 style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
