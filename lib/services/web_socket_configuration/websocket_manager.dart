@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -7,22 +8,28 @@ class WebSocketManager {
   bool _isOpen = false;
 
   WebSocketManager(this._url) {
+    _openWebSocket();
+  }
+
+  void _openWebSocket() {
     _channel = WebSocketChannel.connect(Uri.parse(_url));
     _isOpen = true;
   }
 
+  String get url => _url;
+
   Stream get stream => _channel.stream;
 
-  // Thêm một getter cho _url
-  String get url => _url;
 
   void close() {
     _channel.sink.close();
     _isOpen = false;
   }
 
-  //configure for websocket api
-  void sendRequest(String requestId, String method, Map<String, dynamic> params) async {
+  void sendRequest(String requestId, String method, Map<String, dynamic> params) {
+    if (!_isOpen) {
+      _openWebSocket();
+    }
 
     final request = {
       'id': requestId,
@@ -33,10 +40,10 @@ class WebSocketManager {
   }
 
   void listenForResponses(Function(dynamic) callback) {
-    _channel.stream.listen((dynamic message) {
-      callback(message);
-    });
+    if (_isOpen) {
+      _channel.stream.listen((dynamic message) {
+        callback(message);
+      });
+    }
   }
-  //configure for websocket api
-
 }

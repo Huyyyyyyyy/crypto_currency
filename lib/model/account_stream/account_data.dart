@@ -7,18 +7,25 @@ import '../../services/web_socket_configuration/websocket_manager.dart';
 
 class AccountData with ChangeNotifier {
   WebSocketManager? webSocketManager;
+  WebSocketManager? socketForPrice;
   String accountAlias = '';
   String asset = '';
   String balance = '0.0';
   String crossWalletBalance = '0.0';
+  String totalMaintMargin = '0.0';
+  String totalMarginBalance = '0.0';
   String crossUnPnl = '0.0';
   String availableBalance = '0.0';
   String maxWithdrawAmount = '0.0';
   String marginAvailable = '';
+  String marginRatio = '0.0';
   String updateTime = '';
   String infoId = '';
   String posId = '';
+  String balId = '';
+  String priceId = '';
   List<PositionStreams> currentPositions = [];
+  Map<String, StreamController<String>> priceStreamControllers = {};
 
   AccountData() {
     connectAndUpdateData();
@@ -38,12 +45,12 @@ class AccountData with ChangeNotifier {
     webSocketManager = WebSocketManager(BinanceAPI.testNetEndpoint);
     if (webSocketManager != null) {
       Timer.periodic(const Duration(seconds: 3), (timer) async {
-        final processInfoAccountId = await BinanceAPI.getWsAccountInformation(
-            webSocketManager);
+        final processInfoAccountId = await BinanceAPI.getWsAccountInformation(webSocketManager);
         infoId = processInfoAccountId.toString();
-        final processPositionAccountId = await BinanceAPI.getWsAccountPositions(
-            webSocketManager);
+        final processPositionAccountId = await BinanceAPI.getWsAccountPositions(webSocketManager);
         posId = processPositionAccountId.toString();
+        final processBalanceAccountId = await BinanceAPI.getWsAccountBalance(webSocketManager);
+        balId = processBalanceAccountId.toString();
       });
 
       webSocketManager?.listenForResponses((dynamic response) {
@@ -63,6 +70,8 @@ class AccountData with ChangeNotifier {
         handleInfoResponse(jsonData);
       } else if (responseId == posId) {
         handlePositionResponse(jsonData);
+      } else if (responseId == balId) {
+        handleBalanceResponse(jsonData);
       }
 
       notifyListeners();
@@ -73,12 +82,26 @@ class AccountData with ChangeNotifier {
 
   void handleInfoResponse(Map<String, dynamic> jsonData) {
     availableBalance = jsonData['result']['availableBalance'];
+    totalMarginBalance = jsonData['result']['totalMarginBalance'];
+    totalMaintMargin = jsonData['result']['totalMaintMargin'];
+    marginRatio = BinanceAPI.calculateMarginRatio(double.parse(totalMaintMargin), double.parse(totalMarginBalance));
   }
 
-  void handlePositionResponse(Map<String, dynamic> jsonData) {
+  void handleBalanceResponse(Map<String, dynamic> jsonData) {
+    List<dynamic> results = jsonData['result'];
+    List<dynamic> filteredResults = results.where((obj) =>
+    double.parse(obj['balance']) > 0).toList();
+    for (var result in filteredResults) {
+      balance = result['balance'];
+    }
+  }
+
+  void handlePositionResponse(Map<String, dynamic> jsonData) async {
     List<dynamic> results = jsonData['result'];
     Map<String, Map<String, PositionStreams>> symbolPositions = {};
-    List<dynamic> filteredResults = results.where((obj) =>obj['updateTime'] > 0).toList();
+    List<String> uniqueSymbols = [];
+
+    List<dynamic> filteredResults = results.where((obj) => obj['updateTime'] > 0).toList();
 
     for (var result in filteredResults) {
       String symbol = result['symbol'];
@@ -87,12 +110,18 @@ class AccountData with ChangeNotifier {
       if (!symbolPositions.containsKey(symbol)) {
         symbolPositions[symbol] = {};
       }
+      
+      result['marginRatio'] = marginRatio;
 
       if (!symbolPositions[symbol]!.containsKey(positionSide)) {
         PositionStreams newPosition = PositionStreams.fromJson(result);
         symbolPositions[symbol]![positionSide] = newPosition;
       } else {
         symbolPositions[symbol]![positionSide]!.updateFromJson(result);
+      }
+
+      if (!uniqueSymbols.contains(symbol)) {
+        uniqueSymbols.add(symbol);
       }
     }
 
@@ -101,9 +130,43 @@ class AccountData with ChangeNotifier {
       currentPositions.addAll(sideMap.values);
     });
 
-    // for (var position in positions) {
-    //   print('coin: ${position.symbol} , side : ${position.positionSide} , PnL : ${position.unRealizedProfit}');
-    // }
+    updateCurrentPrices(uniqueSymbols);
+
+    notifyListeners();
+  }
+
+
+  void updateCurrentPrices(List<String> symbols) async{
+    for (String symbol in symbols) {
+      // Tạo StreamController mới cho mỗi symbol nếu chưa tồn tại
+      {
+        StreamController<String> priceStreamController = StreamController<String>();
+        priceStreamControllers[symbol] = priceStreamController;
+
+        socketForPrice = WebSocketManager(BinanceAPI.testNetEndpoint);
+        priceId = await BinanceAPI.getWsCurrentPrice(socketForPrice, symbol);
+
+        socketForPrice?.listenForResponses((response) {
+          final jsonData = json.decode(response);
+          if (jsonData['id'].toString() == priceId && jsonData['result']['symbol'] == symbol) {
+            String currentPrice = jsonData['result']['price'].toString();
+            priceStreamController.add(currentPrice);
+            updatePositionCurrentPrice(symbol, currentPrice);
+          }
+        });
+
+      }
+    }
+  }
+
+
+  void updatePositionCurrentPrice(String symbol, String currentPrice) {
+    for (PositionStreams position in currentPositions) {
+      if (position.symbol == symbol) {
+        position.currentPrice = currentPrice;
+        // print('${position.symbol} : ${position.currentPrice}');
+      }
+    }
   }
 }
 

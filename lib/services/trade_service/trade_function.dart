@@ -339,6 +339,52 @@ class BinanceAPI {
     }
     return 'position account : false';
   }
+
+  static Future<String> getWsAccountBalance(WebSocketManager? streamOfSocket) async {
+    try{
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      const recvWindow = 9999999;
+
+      final requestId = const Uuid().v4();
+      const method = 'account.balance';
+      final params = {
+        "apiKey": apiKey,
+        "timestamp": timestamp,
+        "recvWindow": recvWindow
+      };
+
+      // Generate signature
+      final signature = generateSignatureV2(params, apiSecret);
+      params['signature'] = signature;
+
+
+      streamOfSocket?.sendRequest(requestId, method, params);
+      return requestId;
+
+    }catch(error){
+      print('fail error: $error');
+    }
+    return 'position account : false';
+  }
+
+  static Future<String> getWsCurrentPrice(WebSocketManager? streamOfSocket, String symbol) async {
+    try{
+
+      final requestId = const Uuid().v4();
+      const method = 'ticker.price';
+      final params = {
+        "symbol" : symbol,
+      };
+
+      streamOfSocket?.sendRequest(requestId, method, params);
+
+      return requestId;
+
+    }catch(error){
+      print('fail error: $error');
+    }
+    return 'position account : false';
+  }
   //area for positions (WebSocket API)
 
 
@@ -426,6 +472,33 @@ class BinanceAPI {
       formattedParams.add('$key=${value.toString()}');
     });
     return formattedParams.join('&');
+  }
+
+  static String calculateROI(double currentValue, double previousNetAssetValue) {
+    double tNetAssetValue = currentValue / previousNetAssetValue * previousNetAssetValue;
+    double roi = (tNetAssetValue - previousNetAssetValue) / previousNetAssetValue * 100;
+    return roi.toString();
+  }
+
+  static String calculatePositionROI(double unRealizedPnl, double positionAmt, double markPrice, double leverage) {
+    double roi = (unRealizedPnl / (absolute(positionAmt) * markPrice * (1/leverage))) * 100;
+    return roi.toStringAsFixed(2);
+  }
+
+  static String calculateMargin (double leverage , double positionAmt, double markPrice){
+    return absolute((1/leverage) * positionAmt * markPrice).toStringAsFixed(2);
+  }
+
+  static String calculateSizeOfPosition (double leverage , double positionAmt, double markPrice){
+    return absolute(((1/leverage) * positionAmt * markPrice)*leverage).toStringAsFixed(4);
+  }
+
+  static String calculateMarginRatio (double totalMaintBalance, double walletBalance){
+    return ((totalMaintBalance / walletBalance) * 100).toStringAsFixed(2);
+  }
+
+  static double absolute(double number) {
+    return number < 0 ? -number : number;
   }
   // area for function format
 }
