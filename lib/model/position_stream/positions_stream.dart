@@ -2,7 +2,6 @@ class PositionStreams {
   final String symbol;
   String positionAmt;
   String entryPrice;
-  String currentPrice = '0.0';
   String breakEvenPrice;
   String markPrice;
   String unRealizedProfit;
@@ -70,7 +69,6 @@ class PositionStreams {
   void updateFromJson(Map<String, dynamic> json) {
     positionAmt = json['positionAmt'];
     entryPrice = json['entryPrice'];
-    currentPrice = json['currentPrice'];
     breakEvenPrice = json['breakEvenPrice'];
     markPrice = json['markPrice'];
     unRealizedProfit = json['unRealizedProfit'];
