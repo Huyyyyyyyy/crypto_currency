@@ -395,6 +395,62 @@ class BinanceAPI {
     return 'position account : false';
   }
 
+  static Future<String> startWsUserDataStream(WebSocketManager? streamOfSocket) async {
+    try{
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      const recvWindow = 9999999;
+
+      final requestId = const Uuid().v4();
+      const method = 'userDataStream.start';
+      final params = {
+        "apiKey": apiKey,
+        "timestamp": timestamp,
+        "recvWindow": recvWindow
+      };
+
+      // Generate signature
+      final signature = generateSignatureV2(params, apiSecret);
+      params['signature'] = signature;
+
+
+      streamOfSocket?.sendRequest(requestId, method, params);
+      print('start user data stream (id : $requestId)');
+      return requestId;
+
+    }catch(error){
+      print('fail error: $error');
+    }
+    return 'position account : false';
+  }
+
+  static Future<String> pingWsUserDataStream(WebSocketManager? streamOfSocket, String listenKey) async {
+    try{
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      const recvWindow = 9999999;
+
+      final requestId = const Uuid().v4();
+      const method = 'userDataStream.ping';
+      final params = {
+        "listenKey" : listenKey,
+        "apiKey": apiKey,
+        "timestamp": timestamp,
+        "recvWindow": recvWindow
+      };
+
+      // Generate signature
+      final signature = generateSignatureV2(params, apiSecret);
+      params['signature'] = signature;
+
+
+      streamOfSocket?.sendRequest(requestId, method, params);
+      print('ping user data stream (id : $requestId)');
+      return requestId;
+
+    }catch(error){
+      print('fail error: $error');
+    }
+    return 'position account : false';
+  }
   //area for positions (WebSocket API)
 
 
