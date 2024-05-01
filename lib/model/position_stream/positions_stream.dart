@@ -2,6 +2,7 @@ class PositionStreams {
   final String symbol;
   String positionAmt;
   String entryPrice;
+  String currentPrice = '0.0';
   String breakEvenPrice;
   String markPrice;
   String unRealizedProfit;
@@ -17,6 +18,7 @@ class PositionStreams {
   int updateTime;
   bool isolated;
   int adlQuantile;
+  String marginRatio = '0.0';
 
   PositionStreams({
     required this.symbol,
@@ -36,7 +38,8 @@ class PositionStreams {
     required this.isolatedWallet,
     required this.updateTime,
     required this.isolated,
-    required this.adlQuantile
+    required this.adlQuantile,
+    required this.marginRatio
   });
 
   // Tạo đối tượng Position từ JSON
@@ -59,13 +62,15 @@ class PositionStreams {
       isolatedWallet: json['isolatedWallet'],
       updateTime: json['updateTime'],
       isolated: json['isolated'],
-      adlQuantile: json['adlQuantile']
+      adlQuantile: json['adlQuantile'],
+      marginRatio : json['marginRatio'],
     );
   }
 
   void updateFromJson(Map<String, dynamic> json) {
     positionAmt = json['positionAmt'];
     entryPrice = json['entryPrice'];
+    currentPrice = json['currentPrice'];
     breakEvenPrice = json['breakEvenPrice'];
     markPrice = json['markPrice'];
     unRealizedProfit = json['unRealizedProfit'];
@@ -80,5 +85,6 @@ class PositionStreams {
     updateTime = json['updateTime'];
     isolated: json['isolated'];
     adlQuantile: json['adlQuantile'];
+    marginRatio : json['marginRatio'];
   }
 }
