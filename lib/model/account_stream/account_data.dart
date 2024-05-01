@@ -7,7 +7,6 @@ import '../../services/web_socket_configuration/websocket_manager.dart';
 
 class AccountData with ChangeNotifier {
   WebSocketManager? webSocketManager;
-  WebSocketManager? socketForPrice;
   String accountAlias = '';
   String asset = '';
   String balance = '0.0';
@@ -23,9 +22,10 @@ class AccountData with ChangeNotifier {
   String infoId = '';
   String posId = '';
   String balId = '';
-  String priceId = '';
+  String startUserId = '';
+  String pingUserId = '';
+  String listenKey = '';
   List<PositionStreams> currentPositions = [];
-  Map<String, StreamController<String>> priceStreamControllers = {};
 
   AccountData() {
     connectAndUpdateData();
@@ -44,6 +44,17 @@ class AccountData with ChangeNotifier {
   void connectAndUpdateData() async {
     webSocketManager = WebSocketManager(BinanceAPI.testNetEndpoint);
     if (webSocketManager != null) {
+
+      if(listenKey.isEmpty || listenKey == ''){
+        final processStartUserDataStream = await BinanceAPI.startWsUserDataStream(webSocketManager);
+        startUserId = processStartUserDataStream;
+      }
+
+      Timer.periodic(const Duration(minutes: 50), (timer) async {
+        final processPingUserDataStream = await BinanceAPI.pingWsUserDataStream(webSocketManager, listenKey);
+        pingUserId = processPingUserDataStream;
+      });
+
       Timer.periodic(const Duration(seconds: 3), (timer) async {
         final processInfoAccountId = await BinanceAPI.getWsAccountInformation(webSocketManager);
         infoId = processInfoAccountId.toString();
@@ -59,7 +70,6 @@ class AccountData with ChangeNotifier {
     }
   }
 
-
   void handleResponse(dynamic response) {
     try {
       final jsonData = json.decode(response);
@@ -72,6 +82,10 @@ class AccountData with ChangeNotifier {
         handlePositionResponse(jsonData);
       } else if (responseId == balId) {
         handleBalanceResponse(jsonData);
+      } else if (responseId == startUserId) {
+        handleStartUserResponse(jsonData);
+      } else if (responseId == pingUserId){
+        handlePingUserResponse(jsonData);
       }
 
       notifyListeners();
@@ -99,7 +113,6 @@ class AccountData with ChangeNotifier {
   void handlePositionResponse(Map<String, dynamic> jsonData) async {
     List<dynamic> results = jsonData['result'];
     Map<String, Map<String, PositionStreams>> symbolPositions = {};
-    List<String> uniqueSymbols = [];
 
     List<dynamic> filteredResults = results.where((obj) {
       return obj['updateTime'] > 0 && double.parse(obj['positionAmt']) != 0;
@@ -122,9 +135,6 @@ class AccountData with ChangeNotifier {
         symbolPositions[symbol]![positionSide]!.updateFromJson(result);
       }
 
-      if (!uniqueSymbols.contains(symbol)) {
-        uniqueSymbols.add(symbol);
-      }
     }
 
     currentPositions = [];
@@ -132,43 +142,15 @@ class AccountData with ChangeNotifier {
       currentPositions.addAll(sideMap.values);
     });
 
-    updateCurrentPrices(uniqueSymbols);
-
     notifyListeners();
   }
 
-
-  void updateCurrentPrices(List<String> symbols) async{
-    for (String symbol in symbols) {
-      // Tạo StreamController mới cho mỗi symbol nếu chưa tồn tại
-      {
-        StreamController<String> priceStreamController = StreamController<String>();
-        priceStreamControllers[symbol] = priceStreamController;
-
-        socketForPrice = WebSocketManager(BinanceAPI.testNetEndpoint);
-        priceId = await BinanceAPI.getWsCurrentPrice(socketForPrice, symbol);
-
-        socketForPrice?.listenForResponses((response) {
-          final jsonData = json.decode(response);
-          if (jsonData['id'].toString() == priceId && jsonData['result']['symbol'] == symbol) {
-            String currentPrice = jsonData['result']['price'].toString();
-            priceStreamController.add(currentPrice);
-            updatePositionCurrentPrice(symbol, currentPrice);
-          }
-        });
-
-      }
-    }
+  void handleStartUserResponse(Map<String, dynamic> jsonData) {
+    listenKey = jsonData['result']['listenKey'];
   }
 
-
-  void updatePositionCurrentPrice(String symbol, String currentPrice) {
-    for (PositionStreams position in currentPositions) {
-      if (position.symbol == symbol) {
-        position.currentPrice = currentPrice;
-        // print('${position.symbol} : ${position.currentPrice}');
-      }
-    }
+  void handlePingUserResponse(Map<String, dynamic> jsonData) {
+    listenKey = jsonData['result']['listenKey'];
   }
 }
 

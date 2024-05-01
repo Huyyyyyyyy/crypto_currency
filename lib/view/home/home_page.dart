@@ -82,15 +82,15 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: Theme(
         data: ThemeData(
           splashColor: Colors.transparent,
-          highlightColor: Colors.transparent
+          highlightColor: Colors.transparent,
         ),
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex,
           onTap: _onItemTapped,
           backgroundColor: const Color(0xFF1F2630),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: const Color(0xFF475569),
+          selectedItemColor: const Color(0xFFEBECF0),
+          unselectedItemColor: const Color(0xFF858E9D),
           items:  const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
@@ -115,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
     );
