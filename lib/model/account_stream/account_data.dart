@@ -101,7 +101,9 @@ class AccountData with ChangeNotifier {
     Map<String, Map<String, PositionStreams>> symbolPositions = {};
     List<String> uniqueSymbols = [];
 
-    List<dynamic> filteredResults = results.where((obj) => obj['updateTime'] > 0).toList();
+    List<dynamic> filteredResults = results.where((obj) {
+      return obj['updateTime'] > 0 && double.parse(obj['positionAmt']) != 0;
+    }).toList();
 
     for (var result in filteredResults) {
       String symbol = result['symbol'];

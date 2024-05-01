@@ -142,17 +142,12 @@ class BinanceAPI {
 
       FilterVariables filterVariables = await filterTheOrder(exchangeInfo, newOrder.symbol);
 
-      // test coin BTC
       if (newOrder.quantity < filterVariables.minQty || newOrder.quantity > filterVariables.maxQty) {
         print('${newOrder.quantity}, min : ${filterVariables.minQty}, max: ${filterVariables.maxQty}');
         print('[BINACE-LOT-SIZE] Your order is outside the allowed quantity range.');
         return;
       }
-      // if ((newOrder.quantity - filterVariables.minQty) % filterVariables.stepSize != 0) {
-      //   print((newOrder.quantity - filterVariables.minQty) % filterVariables.stepSize);
-      //   print('[BINACE-LOT-SIZE] Your order quantity is not divisible by the step size.');
-      //   return;
-      // }
+
       if(double.parse(newOrder.priceLimit) < filterVariables.minPrice || double.parse(newOrder.priceLimit) > filterVariables.maxPrice ) {
         print('${newOrder.priceLimit}, min : ${filterVariables.minPrice}, max: ${filterVariables.maxPrice}');
         print('[BINACE-PRICE-FILTER] Your order price is outside the allowed price range');
@@ -175,7 +170,6 @@ class BinanceAPI {
       }
 
       if(newOrder.type == TypeOrder.LIMIT){
-        print('quantity: ${newOrder.quantity}, limit: ${newOrder.priceLimit}');
         if((newOrder.quantity * double.parse(newOrder.priceLimit)) < filterVariables.notional){
           print('[BINACE-MIN-NOTIONAL] Your order is not divisible by the minimum notional');
           return;
@@ -190,26 +184,39 @@ class BinanceAPI {
         }
       }
 
-      // {
-      //   // Làm tròn các giá trị cần thiết trước khi tính toán
-      //   double priceLimit = double.parse(newOrder.priceLimit);
-      //   double minPrice = filterVariables.minPrice;
-      //   double tickSize = filterVariables.tickSize;
-      //
-      //   print('limit: $priceLimit, min: $minPrice, tick: $tickSize');
-      //
-      //   // Làm tròn số liệu trước khi thực hiện phép chia lấy dư
-      //   double difference = (priceLimit - minPrice);
-      //   double roundedDifference = (difference / tickSize) % tickSize;
-      //
-      //   // Kiểm tra xem kết quả có bằng 0 hay không
-      //   if (roundedDifference != 0) {
-      //     print(roundedDifference);
-      //     print('[BINACE-PRICE-FILTER] Your order quantity is not divisible by the tick size.');
-      //     return;
-      //   }
-      //
-      // }
+      {
+        double tickSize = filterVariables.tickSize;
+
+        // Làm tròn các giá trị cần thiết trước khi tính toán
+        newOrder.priceLimit =(await roundQuantity(double.parse(newOrder.priceLimit) , tickSize)).toString();
+        double minPrice = filterVariables.minPrice;
+        await roundQuantity(newOrder.quantity, filterVariables.stepSize).then((roundedValue) {
+          newOrder.quantity = roundedValue;
+        });
+
+        print('limit: ${newOrder.priceLimit}, quantity: ${newOrder.quantity} , min: $minPrice, tick: $tickSize, step: ${filterVariables.stepSize}');
+
+        double differenceQuant = (newOrder.quantity - filterVariables.minQty);
+        double roundedDifferenceQuant = differenceQuant % filterVariables.stepSize;
+
+        if (roundedDifferenceQuant.floorToDouble() != 0) {
+          print(roundedDifferenceQuant);
+          print('[BINANCE-LOT-SIZE] Order quantity is not divisible by the step size.');
+          return;
+        }
+
+        double differencePrice = (double.parse(newOrder.priceLimit) - minPrice);
+        print(differencePrice);
+        double roundedDifferencePrice = differencePrice % tickSize;
+        int lastCondition = roundedDifferencePrice.floor();
+
+        if ( lastCondition != 0) {
+          print(lastCondition);
+          print('[BINACE-PRICE-FILTER] Your order quantity is not divisible by the tick size.');
+          return;
+        }
+
+      }
 
       String query = '';
 
@@ -217,6 +224,7 @@ class BinanceAPI {
         query =
             'symbol=${newOrder.symbol}'
             '&side=${newOrder.side}'
+            '&positionSide=${newOrder.positionSide}'
             '&type=${newOrder.type}'
             '&quantity=${newOrder.quantity}'
             '&recvWindow=${newOrder.recvWindow}'
@@ -232,6 +240,7 @@ class BinanceAPI {
         query =
             'symbol=${newOrder.symbol}'
             '&side=${newOrder.side}'
+            '&positionSide=${newOrder.positionSide}'
             '&type=${newOrder.type}'
             '&quantity=${newOrder.quantity}'
             '&recvWindow=${newOrder.recvWindow}'
@@ -385,6 +394,7 @@ class BinanceAPI {
     }
     return 'position account : false';
   }
+
   //area for positions (WebSocket API)
 
 
@@ -497,8 +507,24 @@ class BinanceAPI {
     return ((totalMaintBalance / walletBalance) * 100).toStringAsFixed(2);
   }
 
+  static double calculateQuantityPerCost (double priceLimit, double cost){
+    return cost / priceLimit;
+  }
+
   static double absolute(double number) {
     return number < 0 ? -number : number;
   }
+
+  static Future<double> roundToTickSize(double value, double tickSize) async{
+    return (value / tickSize).round() * tickSize;
+  }
+
+  static Future<double> roundQuantity(double quantity, double stepSize) async {
+    int decimalPlaces = stepSize.toStringAsFixed(8).replaceAll(RegExp(r'^.*\.|0+$'), '').length;
+    print(decimalPlaces);
+    double roundedQuantity = (quantity * (10.0 * decimalPlaces)).round() / (10.0 * decimalPlaces);
+    return roundedQuantity;
+  }
+
   // area for function format
 }

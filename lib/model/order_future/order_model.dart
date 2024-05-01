@@ -4,6 +4,8 @@ class OrderModel {
   String symbol = '';
   String side = SideOrder.BUY;
   String type = TypeOrder.LIMIT;
+  String positionSide = PositionSide.LONG;
+  int leverage = 20;
 
   //if use LIMIT
   String timeInforce = additionalForLimit.TIME_INFORCE;
