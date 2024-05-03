@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:login_crud_api/Authtentication/login.dart';
-import 'package:login_crud_api/JsonModels/users.dart';
-import 'package:login_crud_api/SQLite/sqlite.dart';
+import 'package:crypto_currency/Authtentication/login.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({Key? key}) : super(key: key);
@@ -11,9 +9,9 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-  final username = TextEditingController();
-  final password = TextEditingController();
-  final confirmPassword = TextEditingController();
+  final TextEditingController username = TextEditingController();
+  final TextEditingController password = TextEditingController();
+  final TextEditingController confirmPassword = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -173,16 +171,7 @@ class _SignUpState extends State<SignUp> {
                     child: TextButton(
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
-                          final db = DatabaseHelper();
-                          db
-                              .signup(
-                              Users(usrName: username.text, usrPassword: password.text))
-                              .whenComplete(() {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const LoginScreen()),
-                            );
-                          });
+                          // Your sign up logic goes here
                         }
                       },
                       child: const Text(
@@ -202,7 +191,9 @@ class _SignUpState extends State<SignUp> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
                           );
                         },
                         child: const Text(
