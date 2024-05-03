@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(bottom: 15),
-                    child: Text(
+                    child: const Text(
                       "Đăng Nhập",
                       style: TextStyle(
                         color: Colors.white,
@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         hintText: "Username",
                         hintStyle: TextStyle(color: Colors.white),
                       ),
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                   Container(
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: const Icon(Icons.lock, color: Colors.yellow),
                           border: InputBorder.none,
                           hintText: "Password",
-                          hintStyle: TextStyle(color: Colors.white),
+                          hintStyle: const TextStyle(color: Colors.white),
                           suffixIcon: IconButton(
                               onPressed: () {
                                 setState(() {
@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: Icon(isVisible
                                   ? Icons.visibility
                                   : Icons.visibility_off, color: Colors.white))),
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -138,12 +138,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   if (isLoginTrue)
-                    Text(
+                    const Text(
                       "Tên người dùng hoặc mật khẩu không chính xác",
                       style: TextStyle(color: Colors.red),
                     )
                   else
-                    SizedBox.shrink(),
+                    const SizedBox.shrink(),
                 ],
               ),
             ),

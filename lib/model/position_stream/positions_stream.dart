@@ -1,4 +1,6 @@
 class PositionStreams {
+  String clientOrderId;
+  String orderId;
   final String symbol;
   String positionAmt;
   String entryPrice;
@@ -20,6 +22,8 @@ class PositionStreams {
   String marginRatio = '0.0';
 
   PositionStreams({
+    required this.clientOrderId,
+    required this.orderId,
     required this.symbol,
     required this.positionAmt,
     required this.entryPrice,
@@ -44,6 +48,8 @@ class PositionStreams {
   // Tạo đối tượng Position từ JSON
   factory PositionStreams.fromJson(Map<String, dynamic> json) {
     return PositionStreams(
+      clientOrderId: json['clientOrderId'],
+      orderId: json['orderId'],
       symbol: json['symbol'],
       positionAmt: json['positionAmt'],
       entryPrice: json['entryPrice'],
@@ -67,6 +73,8 @@ class PositionStreams {
   }
 
   void updateFromJson(Map<String, dynamic> json) {
+    clientOrderId = json['clientOrderId'];
+    orderId = json['orderId'];
     positionAmt = json['positionAmt'];
     entryPrice = json['entryPrice'];
     breakEvenPrice = json['breakEvenPrice'];
