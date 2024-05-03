@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:crypto_currency/Authtentication/login.dart';
 
 class SignUp extends StatefulWidget {
-  const SignUp({Key? key}) : super(key: key);
+  const SignUp({super.key});
 
   @override
   State<SignUp> createState() => _SignUpState();
@@ -89,7 +89,7 @@ class _SignUpState extends State<SignUp> {
                         icon: const Icon(Icons.lock, color: Colors.yellow),
                         border: InputBorder.none,
                         hintText: "Password",
-                        hintStyle: TextStyle(color: Colors.white),
+                        hintStyle: const TextStyle(color: Colors.white),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {
@@ -141,7 +141,7 @@ class _SignUpState extends State<SignUp> {
                         icon: const Icon(Icons.lock, color: Colors.yellow),
                         border: InputBorder.none,
                         hintText: "Confirm Password",
-                        hintStyle: TextStyle(color: Colors.white),
+                        hintStyle: const TextStyle(color: Colors.white),
                         errorText: passwordErrorText,
                         suffixIcon: IconButton(
                           onPressed: () {

@@ -568,7 +568,9 @@ class _AllPositionsState extends State<AllPositions> {
                                           color: Color(0xFFD4D7DC)
                                       )
                                   ),
-                                  onPressed: () {},
+                                  onPressed: () async{
+                                    await BinanceAPI.closeOpenTrade(position);
+                                  },
                                 ),
                               ),
                             )
