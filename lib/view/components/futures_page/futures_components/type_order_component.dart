@@ -1011,7 +1011,7 @@ class _TypeOrderComponentState extends State<TypeOrderComponent> {
                       double.parse(orderModel.priceLimit),
                       double.parse(_costBaseOnPercentageForLong.toString()));
                   orderModel.priceMarket = widget.futuresData.priceMarket;
-                  await BinanceAPI.createNewOrderFuture(orderModel);
+                  print(await BinanceAPI.createNewOrderFuture(orderModel));
                   // print(orderModel.symbol);
                   // print(orderModel.side);
                   // print(orderModel.type);

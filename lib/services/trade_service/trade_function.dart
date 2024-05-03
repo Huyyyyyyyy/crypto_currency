@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:crypto_currency/db/objects/orders.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
 import 'package:crypto_currency/services/trade_service/filter_variables.dart';
@@ -132,7 +133,7 @@ class BinanceAPI {
     return filterVariables;
   }
 
-  static Future<void> createNewOrderFuture(OrderModel newOrder) async {
+  static Future<bool> createNewOrderFuture(OrderModel newOrder) async {
     try {
 
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
@@ -145,34 +146,34 @@ class BinanceAPI {
       if (newOrder.quantity < filterVariables.minQty || newOrder.quantity > filterVariables.maxQty) {
         print('${newOrder.quantity}, min : ${filterVariables.minQty}, max: ${filterVariables.maxQty}');
         print('[BINACE-LOT-SIZE] Your order is outside the allowed quantity range.');
-        return;
+        return false ;
       }
 
       if(double.parse(newOrder.priceLimit) < filterVariables.minPrice || double.parse(newOrder.priceLimit) > filterVariables.maxPrice ) {
         print('${newOrder.priceLimit}, min : ${filterVariables.minPrice}, max: ${filterVariables.maxPrice}');
         print('[BINACE-PRICE-FILTER] Your order price is outside the allowed price range');
-        return;
+        return false;
       }
 
       if (newOrder.side == SideOrder.BUY){
         if(double.parse(newOrder.priceLimit) > filterVariables.markPrice*filterVariables.multiplierUp){
           print(filterVariables.markPrice*filterVariables.multiplierUp);
           print('[BINACE-PERCENT-PRICE] Your order is not divisible by the valid range for a price base on the market price');
-          return;
+          return false;
         }
       }
 
       if (newOrder.side == SideOrder.SELL){
         if(double.parse(newOrder.priceLimit) < filterVariables.markPrice*filterVariables.multiplierDown){
           print('[BINACE-PERCENT-PRICE] Your order is not divisible by the valid range for a price base on the market price');
-          return;
+          return false;
         }
       }
 
       if(newOrder.type == TypeOrder.LIMIT){
         if((newOrder.quantity * double.parse(newOrder.priceLimit)) < filterVariables.notional){
           print('[BINACE-MIN-NOTIONAL] Your order is not divisible by the minimum notional');
-          return;
+          return false;
         }
       }
 
@@ -180,7 +181,7 @@ class BinanceAPI {
         print('quantity: ${newOrder.quantity}, market: ${newOrder.priceMarket}');
         if((newOrder.quantity * double.parse(newOrder.priceMarket)) < filterVariables.notional){
           print('[BINACE-MIN-NOTIONAL] Your order is not divisible by the minimum notional');
-          return;
+          return false;
         }
       }
 
@@ -202,7 +203,7 @@ class BinanceAPI {
         if (roundedDifferenceQuant.floorToDouble() != 0) {
           print(roundedDifferenceQuant);
           print('[BINANCE-LOT-SIZE] Order quantity is not divisible by the step size.');
-          return;
+          return false;
         }
 
         double differencePrice = (double.parse(newOrder.priceLimit) - minPrice);
@@ -213,7 +214,7 @@ class BinanceAPI {
         if ( lastCondition != 0) {
           print(lastCondition);
           print('[BINACE-PRICE-FILTER] Your order quantity is not divisible by the tick size.');
-          return;
+          return false;
         }
 
       }
@@ -264,11 +265,33 @@ class BinanceAPI {
 
       if (response.statusCode == 200) {
         print(response.body);
+        final jsonResponse = json.decode(response.body);
+        try{
+          Orders order = Orders(
+              clientOrderId: jsonResponse['clientOrderId'].toString(),
+              orderId: jsonResponse['orderId'].toString(),
+              symbol: jsonResponse['symbol'].toString(),
+              side: jsonResponse['side'].toString(),
+              type: jsonResponse['type'].toString(),
+              positionSide: jsonResponse['positionSide'].toString(),
+              status: jsonResponse['status'].toString(),
+              updateTime: jsonResponse['updateTime'].toString()
+          );
+          if(await Orders.addPositions(order) == true){
+            return true;
+          }
+          return false;
+        }catch (error){
+          print('error when add position : $error');
+          return false;
+        }
       } else {
         print('Failed to fetch data: ${response.body}');
+        return false;
       }
     } catch (error) {
       print('Error fetching data: $error');
+      return false;
     }
   }
 
