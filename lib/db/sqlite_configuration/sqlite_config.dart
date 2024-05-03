@@ -13,7 +13,7 @@ class SQLiteConfiguration {
       'type text,'
       'position_side text,'
       'status text,'
-      'timestamp text'
+      'update_time text'
       ')';
   String TABLE_ACCOUNT = 'create table accounts'
       '('
@@ -25,12 +25,22 @@ class SQLiteConfiguration {
 
   Future<Database> openDB () async {
     final databasePath = await getDatabasesPath();
+    print(databasePath);
     final path = join(databasePath, db_name);
+    var ourDb = await openDatabase(path, version: 2, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    return ourDb;
+  }
 
-    return openDatabase(path, version: 1, onCreate: (db, version) async {
-      await db.execute(TABLE_ORDER);
-      await db.execute(TABLE_ACCOUNT);
-      print('open database : $db_name');
-    });
+  void _onCreate(Database db, int version) async{
+    await db.execute(TABLE_ORDER);
+    await db.execute(TABLE_ACCOUNT);
+    print('open database : $db_name');
+  }
+
+
+  void _onUpgrade(Database db, int oldVersion, int newVersion) async{
+    if (oldVersion < newVersion) {
+      // await db.execute("ALTER TABLE orders RENAME COLUMN ""updateTime"" TO update_time");
+    }
   }
 }
