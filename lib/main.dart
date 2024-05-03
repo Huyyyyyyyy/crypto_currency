@@ -6,8 +6,15 @@ import 'package:provider/provider.dart';
 import 'model/futures_currency_stream/futures_data.dart';
 
 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:crypto_currency/app.dart';
+import 'package:crypto_currency/cubit_observer.dart';
+import 'package:crypto_currency/view/home/service/get-it/get_it_source.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 
@@ -19,7 +26,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => FuturesData()),
-        ChangeNotifierProvider(create: (context) => AccountData())
+        ChangeNotifierProvider(create: (context) => AccountData()),
       ],
       child: MaterialApp(
         title: 'Final - Project',
