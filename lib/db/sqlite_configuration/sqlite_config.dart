@@ -9,11 +9,10 @@ class SQLiteConfiguration {
       'client_order_id text primary key,'
       'order_id text,'
       'symbol text,'
-      'side text,'
-      'type text,'
       'position_side text,'
       'status text,'
-      'update_time text'
+      'update_time text,'
+      'api_key text'
       ')';
   String TABLE_ACCOUNT = 'create table accounts'
       '('
@@ -25,9 +24,8 @@ class SQLiteConfiguration {
 
   Future<Database> openDB () async {
     final databasePath = await getDatabasesPath();
-    print(databasePath);
     final path = join(databasePath, db_name);
-    var ourDb = await openDatabase(path, version: 2, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    var ourDb = await openDatabase(path, version: 1, onCreate: _onCreate, onUpgrade: _onUpgrade);
     return ourDb;
   }
 

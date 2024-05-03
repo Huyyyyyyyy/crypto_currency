@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:crypto_currency/db/objects/orders.dart';
+import 'package:crypto_currency/db/sqlite_configuration/sqlite_config.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
+import 'package:crypto_currency/model/position_stream/positions_stream.dart';
 import 'package:crypto_currency/services/trade_service/filter_variables.dart';
 import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 class BinanceAPI {
@@ -271,11 +275,10 @@ class BinanceAPI {
               clientOrderId: jsonResponse['clientOrderId'].toString(),
               orderId: jsonResponse['orderId'].toString(),
               symbol: jsonResponse['symbol'].toString(),
-              side: jsonResponse['side'].toString(),
-              type: jsonResponse['type'].toString(),
               positionSide: jsonResponse['positionSide'].toString(),
               status: jsonResponse['status'].toString(),
-              updateTime: jsonResponse['updateTime'].toString()
+              updateTime: jsonResponse['updateTime'].toString(),
+              apiKey: BinanceAPI.apiKey
           );
           if(await Orders.addPositions(order) == true){
             return true;
@@ -313,6 +316,101 @@ class BinanceAPI {
       }
     } catch (error) {
       throw Exception('Error fetching data: $error');
+    }
+  }
+
+  static Future<String?> queryPosition(String symbol, String orderId, String origClientOrderId) async{
+    try{
+      print(orderId);
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      String query = 'symbol=$symbol&orderId=$orderId&origClientOrderId=$origClientOrderId&recvWindow=${additionalForLimit.recvWindow}&timestamp=$timestamp';
+
+      String signature = generateSignature(query, apiSecret);
+      String params = '$query&signature=$signature';
+
+      final response = await http.get(
+        Uri.parse('$endpoint/fapi/v1/order?$params'),
+        headers: {
+          'X-MBX-APIKEY': apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return response.body;
+      } else {
+        print('Failed close trade: ${response.body}');
+        return null;
+      }
+    }catch (error) {
+      print('Error close trade: $error');
+      return null;
+    }
+  }
+
+  static Future<bool> closeOpenTrade(PositionStreams currentPosition) async{
+    try{
+      String? currentPos = await queryPosition(currentPosition.symbol, currentPosition.orderId, currentPosition.clientOrderId);
+      if(currentPos != null){
+        final jsonRes = json.decode(currentPos);
+
+        String side = jsonRes['side'].toString();
+        String type = jsonRes['type'].toString();
+        String quantity = jsonRes['origQty'].toString();
+        (side == SideOrder.SELL) ? side = SideOrder.BUY : side = SideOrder.SELL;
+        type = TypeOrder.MARKET;
+
+        String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+        String query = 'symbol=${currentPosition.symbol}'
+            '&side=$side'
+            '&positionSide=${currentPosition.positionSide}'
+            '&type=$type'
+            '&quantity=$quantity'
+            '&timestamp=$timestamp'
+            '&recvWindow=${additionalForLimit.recvWindow}';
+
+        String signature = generateSignature(query, apiSecret);
+        String params = '$query&signature=$signature';
+
+        final response = await http.post(
+          Uri.parse('$endpoint/fapi/v1/order?$params'),
+          headers: {
+            'X-MBX-APIKEY': apiKey,
+          },
+        );
+        // {"orderId":1370883419,"symbol":"ETHUSDT","status":"NEW","clientOrderId":"g3mrmyBervIMQXoGHY7z7b",
+        // "price":"0.00","avgPrice":"0.00","origQty":"0.050","executedQty":"0.000","cumQty":"0.000",
+        // "cumQuote":"0.00000","timeInForce":"GTC","type":"MARKET","reduceOnly":true,"closePosition":false,"side":"BUY",
+        // "positionSide":"SHORT","stopPrice":"0.00","workingType":"CONTRACT_PRICE","priceProtect":false,"origType":"MARKET",
+        // "priceMatch":"NONE","selfTradePreventionMode":"NONE","goodTillDate":0,"updateTime":1714766604834}
+        if (response.statusCode == 200) {
+          print('close trade successully ! update db next');
+          final jsonResponse = json.decode(response.body);
+          Orders deletedOrder = Orders(
+              clientOrderId: jsonResponse['clientOrderId'].toString(),
+              orderId: jsonResponse['orderId'].toString(),
+              symbol: currentPosition.symbol,
+              positionSide: jsonResponse['positionSide'].toString(),
+              status: jsonResponse['status'].toString(),
+              updateTime: jsonResponse['updateTime'].toString(),
+              apiKey: apiKey
+          );
+          Database db = await SQLiteConfiguration().openDB();
+          if(await Orders.updatePosition(db, deletedOrder) == true){
+            print('cancel position was updated on db successfully');
+            return true;
+          }
+          print('cancel position was updated on db false');
+          return false;
+        }else {
+          print(response.body);
+          return false;
+        }
+      }
+      print('Failed close trade');
+      return false;
+    }catch (error) {
+      print('Error close trade: $error');
+      return false;
     }
   }
   //area for trading feature (base API)

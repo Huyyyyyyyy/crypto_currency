@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:crypto_currency/model/position_stream/positions_stream.dart';
 import 'package:crypto_currency/services/trade_service/trade_function.dart';
 import 'package:flutter/cupertino.dart';
+import '../../db/objects/orders.dart';
 import '../../services/web_socket_configuration/websocket_manager.dart';
 
 class AccountData with ChangeNotifier {
@@ -118,15 +119,37 @@ class AccountData with ChangeNotifier {
       return obj['updateTime'] > 0 && double.parse(obj['positionAmt']) != 0;
     }).toList();
 
+    List<Orders> listOrders = await Orders.getPositions(BinanceAPI.apiKey);
+    Map<String, Map<String, String>> orderInfoMap = {};
+
+    for (var order in listOrders) {
+      String clientOrderId = order.clientOrderId;
+      String orderId = order.orderId;
+
+      // Use a composite key (symbol + positionSide) to store clientOrderId and orderId
+      String key = '${order.symbol}-${order.positionSide}';
+      orderInfoMap[key] = {
+        'clientOrderId': clientOrderId,
+        'orderId': orderId,
+      };
+    }
+
     for (var result in filteredResults) {
       String symbol = result['symbol'];
       String positionSide = result['positionSide'];
+
+      String key = '$symbol-$positionSide';
+      if (orderInfoMap.containsKey(key)) {
+        result['clientOrderId'] = orderInfoMap[key]!['clientOrderId'];
+        result['orderId'] = orderInfoMap[key]!['orderId'];
+      }
 
       if (!symbolPositions.containsKey(symbol)) {
         symbolPositions[symbol] = {};
       }
       
       result['marginRatio'] = marginRatio;
+      // print(result);
 
       if (!symbolPositions[symbol]!.containsKey(positionSide)) {
         PositionStreams newPosition = PositionStreams.fromJson(result);
@@ -136,11 +159,10 @@ class AccountData with ChangeNotifier {
       }
 
     }
-
     currentPositions = [];
-    symbolPositions.values.forEach((sideMap) {
+    for (var sideMap in symbolPositions.values) {
       currentPositions.addAll(sideMap.values);
-    });
+    }
 
     notifyListeners();
   }
