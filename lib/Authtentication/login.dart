@@ -1,3 +1,5 @@
+import 'package:crypto_currency/db/objects/accounts.dart';
+import 'package:crypto_currency/view/home/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/Authtentication/signup.dart';
 
@@ -104,9 +106,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.yellow,
                     ),
                     child: TextButton(
-                      onPressed: () {
+                      onPressed: () async{
                         if (formKey.currentState!.validate()) {
-                          // Implement your login logic here
+                          List<Accounts> account = await Accounts.customerLogin(username.text, password.text) ;
+                          if(account.isNotEmpty){
+                            print('login success');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const MyHomePage()),
+                            );
+                          }
+                          else
+                            {
+                              print('login false');
+                            }
                         }
                       },
                       child: const Text(
