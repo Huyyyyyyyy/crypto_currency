@@ -572,6 +572,34 @@ class BinanceAPI {
     }
     return 'position account : false';
   }
+
+  static Future<String> logonSessionUserData(WebSocketManager? streamOfSocket, String apiKey) async{
+    try{
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      const recvWindow = 9999999;
+
+      final requestId = const Uuid().v4();
+      const method = 'session.logon';
+      final params = {
+        "apiKey": apiKey,
+        "timestamp": timestamp,
+        "recvWindow": recvWindow
+      };
+
+      // Generate signature
+      final signature = generateSignatureV2(params, apiSecret);
+      params['signature'] = signature;
+
+
+      streamOfSocket?.sendRequest(requestId, method, params);
+      print('logon user data stream (id : $requestId)');
+      return requestId;
+
+    }catch(error){
+      print('fail error: $error');
+    }
+    return 'logon user data stream : false';
+  }
   //area for positions (WebSocket API)
 
 
