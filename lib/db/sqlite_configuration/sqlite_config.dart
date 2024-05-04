@@ -16,7 +16,7 @@ class SQLiteConfiguration {
       ')';
   String TABLE_ACCOUNT = 'create table accounts'
       '('
-      'user_name text,'
+      'username text,'
       'password text,'
       'api_key text primary key,'
       'secret_key text'
@@ -38,7 +38,7 @@ class SQLiteConfiguration {
 
   void _onUpgrade(Database db, int oldVersion, int newVersion) async{
     if (oldVersion < newVersion) {
-      // await db.execute("ALTER TABLE orders RENAME COLUMN ""updateTime"" TO update_time");
+      await db.execute("ALTER TABLE accounts RENAME COLUMN ""user_name"" TO username");
     }
   }
 }

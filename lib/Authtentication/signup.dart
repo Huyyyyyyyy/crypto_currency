@@ -1,3 +1,4 @@
+import 'package:crypto_currency/db/objects/accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto_currency/Authtentication/login.dart';
 
@@ -12,6 +13,8 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
   final TextEditingController confirmPassword = TextEditingController();
+  final TextEditingController apiKey = TextEditingController();
+  final TextEditingController secretKey = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
 
@@ -160,6 +163,56 @@ class _SignUpState extends State<SignUp> {
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),
+                  Container(
+                    margin: const EdgeInsets.all(8),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: const Color(0xFF39414A),
+                    ),
+                    child: TextFormField(
+                      controller: apiKey,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return "API Key không để trống";
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        icon: Icon(Icons.person, color: Colors.yellow),
+                        border: InputBorder.none,
+                        hintText: "API Key",
+                        hintStyle: TextStyle(color: Colors.white),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.all(8),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: const Color(0xFF39414A),
+                    ),
+                    child: TextFormField(
+                      controller: secretKey,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return "Secret Key không để trống";
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        icon: Icon(Icons.person, color: Colors.yellow),
+                        border: InputBorder.none,
+                        hintText: "Secret Key",
+                        hintStyle: TextStyle(color: Colors.white),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   Container(
                     height: 55,
@@ -169,9 +222,26 @@ class _SignUpState extends State<SignUp> {
                       color: Colors.yellow,
                     ),
                     child: TextButton(
-                      onPressed: () {
+                      onPressed: () async{
                         if (formKey.currentState!.validate()) {
-                          // Your sign up logic goes here
+                          Accounts newAccount = Accounts(
+                              username: username.text,
+                              password: password.text,
+                              apiKey: apiKey.text,
+                              secretKey: secretKey.text
+                          );
+
+                          if(await Accounts.customerRegister(newAccount) == true){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          }
+                          else{
+                            print('register false');
+                          }
                         }
                       },
                       child: const Text(
