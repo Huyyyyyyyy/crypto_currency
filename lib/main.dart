@@ -1,6 +1,6 @@
+import 'package:crypto_currency/Authtentication/login.dart';
 import 'package:crypto_currency/model/account_stream/account_data.dart';
 import 'package:flutter/material.dart';
-import 'package:crypto_currency/view/home/home_page.dart';
 import 'package:provider/provider.dart';
 
 import 'model/futures_currency_stream/futures_data.dart';
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const MyHomePage(),
+        home: const LoginScreen(),
       ),
     );
   }
