@@ -31,7 +31,7 @@ class CryptoTile extends StatelessWidget {
   }
 
   //formatted price before using
-  String getFormattedPriceVND(String price, double exchangeRate) {
+  static String getFormattedPriceVND(String price, double exchangeRate) {
     // Remove any non-numeric characters except the decimal point
     String priceWithoutSymbol = price.replaceAll(RegExp(r'[^0-9.]'), '');
     // Parse the price string into a double
@@ -45,7 +45,7 @@ class CryptoTile extends StatelessWidget {
         locale: "vi_VN" // Locale for Vietnam to get the correct thousand separator
     ).format(priceInVND);
     // Return the formatted price with a space after the symbol for better readability
-    return formattedPrice.replaceFirst('đ','');
+    return formattedPrice.replaceFirst('','');
   }
 
   String formatSymbol(String symbol) {
