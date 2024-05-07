@@ -10,7 +10,7 @@ class DottedBorderUnderText extends SingleChildRenderObjectWidget {
   DottedBorderUnderText({
     Key? key,
     required this.child,
-    this.color = Colors.white,
+    this.color = const Color(0xFF6B727E),
     this.strokeWidth = 1.0,
     this.gapWidth = 3.0,
   }) : super(key: key, child: child);

@@ -1,5 +1,6 @@
 import 'package:crypto_currency/view/components/crypto_list_page.dart';
 import 'package:crypto_currency/view/components/futures_page/futures_page.dart';
+import 'package:crypto_currency/view/components/wallet_page/wallet-page.dart';
 import 'package:flutter/material.dart';
 
 
@@ -73,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator(
             key: keyForWallet,
             onGenerateRoute: (routeSettings) {
-              return MaterialPageRoute(builder: (context) => const Text('Ví')); // Your default page
+              return MaterialPageRoute(builder: (context) => const WalletPage()); // Your default page
             },
           ),
           // Other tabs here...
