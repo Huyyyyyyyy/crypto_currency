@@ -15,7 +15,8 @@ class AccountData with ChangeNotifier {
   String totalInitialMargin = '0.0';
   String totalMaintMargin = '0.0';
   String totalMarginBalance = '0.0';
-  String crossUnPnl = '0.0';
+  String totalUnrealizedProfit = '0.0';
+  String totalCrossUnPnl = '0.0';
   String availableBalance = '0.0';
   String maxWithdrawAmount = '0.0';
   String marginAvailable = '';
@@ -101,6 +102,8 @@ class AccountData with ChangeNotifier {
     totalMarginBalance = jsonData['result']['totalMarginBalance'];
     totalMaintMargin = jsonData['result']['totalMaintMargin'];
     totalInitialMargin = jsonData['result']['totalInitialMargin'];
+    totalUnrealizedProfit = jsonData['result']['totalUnrealizedProfit'];
+    totalCrossUnPnl = jsonData['result']['totalCrossUnPnl'];
     marginRatio = BinanceAPI.calculateMarginRatio(double.parse(totalMaintMargin), double.parse(totalMarginBalance));
   }
 

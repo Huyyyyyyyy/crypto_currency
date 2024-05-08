@@ -8,7 +8,6 @@ import 'package:crypto_currency/model/position_stream/positions_stream.dart';
 import 'package:crypto_currency/services/trade_service/filter_variables.dart';
 import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
