@@ -1,5 +1,6 @@
 import 'package:crypto_currency/db/sqlite_configuration/sqlite_config.dart';
 import 'package:crypto_currency/db/table/table.dart';
+import 'package:crypto_currency/services/global_key_storage/global_setting.dart';
 import 'package:crypto_currency/services/trade_service/trade_function.dart';
 import 'package:sqflite/sqflite.dart';
 class Orders {
@@ -28,7 +29,7 @@ class Orders {
       positionSide: json["position_side"] as String? ?? '',
       status: json["status"] as String? ?? '',
       updateTime: json["update_time"] as String? ?? '',
-      apiKey: BinanceAPI.apiKey ?? ''
+      apiKey: json["api_key"] as String? ?? '',
   );
 
   Map<String, dynamic> toMap() => {

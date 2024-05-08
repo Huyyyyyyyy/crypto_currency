@@ -1,5 +1,6 @@
 import 'package:crypto_currency/db/sqlite_configuration/sqlite_config.dart';
 import 'package:crypto_currency/db/table/table.dart';
+import 'package:crypto_currency/services/global_key_storage/global_setting.dart';
 import 'package:sqflite/sqflite.dart';
 class Accounts {
   String username = '';
@@ -83,11 +84,23 @@ class Accounts {
     }
   }
 
-  static Future<List<Accounts>> customerLogin (String username , String password) async{
-    List<Map<String,Object?>> result ;
+  static Future<Accounts?> customerLogin(String username, String password) async {
     Database db = await SQLiteConfiguration().openDB();
-    result = await db.rawQuery("select * from accounts where username = '$username' and password = '$password'");
-    print('login success');
-    return result.map((e) => Accounts.fromMap(e)).toList();
+    List<Map<String, Object?>> result = await db.rawQuery(
+      "SELECT * FROM accounts WHERE username = '$username' AND password = '$password'",
+    );
+
+    if (result.isNotEmpty) {
+      print('Login success');
+      Accounts loginAccount = Accounts.fromMap(result.first);
+      await GlobalSettings.updateApiKey(loginAccount.apiKey);
+      print('update api key successfully');
+      await GlobalSettings.updateSecretKey(loginAccount.secretKey);
+      print('update secret key successfully');
+      return loginAccount;
+    } else {
+      print('account not exist in db');
+      return null;
+    }
   }
 }

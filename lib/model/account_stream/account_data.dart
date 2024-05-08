@@ -4,6 +4,7 @@ import 'package:crypto_currency/model/position_stream/positions_stream.dart';
 import 'package:crypto_currency/services/trade_service/trade_function.dart';
 import 'package:flutter/cupertino.dart';
 import '../../db/objects/orders.dart';
+import '../../services/global_key_storage/global_setting.dart';
 import '../../services/web_socket_configuration/websocket_manager.dart';
 
 class AccountData with ChangeNotifier {
@@ -124,7 +125,9 @@ class AccountData with ChangeNotifier {
       return obj['updateTime'] > 0 && double.parse(obj['positionAmt']) != 0;
     }).toList();
 
-    List<Orders> listOrders = await Orders.getPositions(BinanceAPI.apiKey);
+    String apiKey = await GlobalSettings.getApiKey();
+
+    List<Orders> listOrders = await Orders.getPositions(apiKey);
     Map<String, Map<String, String>> orderInfoMap = {};
 
     for (var order in listOrders) {
@@ -173,6 +176,7 @@ class AccountData with ChangeNotifier {
   }
 
   void handleStartUserResponse(Map<String, dynamic> jsonData) {
+    print(jsonData);
     listenKey = jsonData['result']['listenKey'];
   }
 

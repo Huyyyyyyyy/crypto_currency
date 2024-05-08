@@ -34,7 +34,7 @@ class _FuturesWalletState extends State<FuturesWallet> with SingleTickerProvider
     return Consumer2<FuturesData, AccountData>(
       builder: (context, futuresData, accountData, _) {
         String formattedPriceVnd ='₫ ${CryptoTile.getFormattedPriceVND(accountData.totalMarginBalance,23000)}';
-        String formattedPercentagePnl =CryptoTile.getFormattedPriceVND(accountData.totalCrossUnPnl,23000);
+        String formattedPercentagePnl = ((double.parse(accountData.totalCrossUnPnl)*100)/double.parse(accountData.totalMarginBalance)).toStringAsFixed(2);
         return Scaffold(
           backgroundColor: const Color(0xFF1F2630),
           appBar: null, // Remove the default app bar
@@ -194,19 +194,119 @@ class _FuturesWalletState extends State<FuturesWallet> with SingleTickerProvider
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(
-                      'Lãi lỗ đã ghi nhận hôm nay '
-                        '${double.parse(accountData.totalCrossUnPnl).toStringAsFixed(2)} '
-                          '$formattedPercentagePnl',
+                    const Text(
+                      'Lãi lỗ đã ghi nhận hôm nay ',
                       style: TextStyle(
-                        color: (double.parse(accountData.totalCrossUnPnl)) >= 0 ? Colors.greenAccent : Colors.redAccent ,
+                        color: Color(0xFFEAECF0) ,
                         fontWeight: FontWeight.w400,
                         fontSize: 16
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Text(
+                            '${double.parse(accountData.totalCrossUnPnl).toStringAsFixed(2)} '
+                            '($formattedPercentagePnl%)',
+                        style: TextStyle(
+                            color: (double.parse(accountData.totalCrossUnPnl)) >= 0 ? Colors.greenAccent : Colors.redAccent ,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16
+                        ),
                       ),
                     )
                   ],
                 ),
-              )
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const Expanded(
+                      flex: 4,
+                      child: Text(
+                        'Số dư ví (USDT)',
+                        style: TextStyle(
+                          color: Color(0xFF858E9C)
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 6,
+                      child: DottedBorderUnderText(
+                        child: const Text(
+                          'PNL chưa được ghi nhận (USDT)',
+                          style: TextStyle(
+                              color: Color(0xFF858E9C)
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: Text(
+                        double.parse(accountData.totalMarginBalance) > 0 ? double.parse(accountData.totalMarginBalance).toStringAsFixed(2) : '--',
+                        style: const TextStyle(
+                            color: Color(0xFFEAECF0),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 6,
+                      child: Text(
+                        (double.parse(accountData.totalCrossUnPnl) != 0 ? (double.parse(accountData.totalCrossUnPnl) >= 0 ? double.parse(accountData.totalCrossUnPnl).toStringAsFixed(2) : '-${double.parse(accountData.totalCrossUnPnl).toStringAsFixed(2)}') : '--' ),
+                        style: const TextStyle(
+                            color: Color(0xFFEAECF0),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: Text(
+                        double.parse(accountData.totalMarginBalance) > 0 ?
+                        '₫ ${(double.parse(accountData.totalMarginBalance)*23000).toStringAsFixed(2)}'
+                          : '₫0.000000',
+                        style: const TextStyle(
+                            color: Color(0xFF858E9C),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 6,
+                      child: Text(
+                        (double.parse(accountData.totalCrossUnPnl) != 0 ? (double.parse(accountData.totalCrossUnPnl) >= 0 ? '₫ ${(double.parse(accountData.totalCrossUnPnl)*23000).toStringAsFixed(2)}' : '- ₫ ${(double.parse(accountData.totalCrossUnPnl)*23000).toStringAsFixed(2)}') : '₫0.000000' ),
+                        style: const TextStyle(
+                            color: Color(0xFF858E9C),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
             ],
           ),
         );
