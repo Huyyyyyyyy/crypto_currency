@@ -34,6 +34,7 @@ class _FuturesWalletState extends State<FuturesWallet> with SingleTickerProvider
     return Consumer2<FuturesData, AccountData>(
       builder: (context, futuresData, accountData, _) {
         String formattedPriceVnd ='₫ ${CryptoTile.getFormattedPriceVND(accountData.totalMarginBalance,23000)}';
+        String formattedPercentagePnl =CryptoTile.getFormattedPriceVND(accountData.totalCrossUnPnl,23000);
         return Scaffold(
           backgroundColor: const Color(0xFF1F2630),
           appBar: null, // Remove the default app bar
@@ -188,15 +189,17 @@ class _FuturesWalletState extends State<FuturesWallet> with SingleTickerProvider
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      'Lãi lỗ đã ghi nhận hôm nay',
+                      'Lãi lỗ đã ghi nhận hôm nay '
+                        '${double.parse(accountData.totalCrossUnPnl).toStringAsFixed(2)} '
+                          '$formattedPercentagePnl',
                       style: TextStyle(
-                        color: Color(0xFFE1E3E8),
+                        color: (double.parse(accountData.totalCrossUnPnl)) >= 0 ? Colors.greenAccent : Colors.redAccent ,
                         fontWeight: FontWeight.w400,
                         fontSize: 16
                       ),
