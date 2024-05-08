@@ -112,7 +112,7 @@ class _WalletPageState extends State<WalletPage> with SingleTickerProviderStateM
             child: TabBarView(
               controller: _tabController,
               children: const [
-                Center(child: Text('Tài khoản')),
+                Center(child: Text('Tổng quan về tài khoản')),
                 Center(child: Text('Giao ngay')),
                 Center(child: Text('Funding')),
                 Center(child: Text('Earn')),

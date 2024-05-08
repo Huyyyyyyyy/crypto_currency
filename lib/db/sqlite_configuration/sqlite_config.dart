@@ -38,7 +38,7 @@ class SQLiteConfiguration {
 
   void _onUpgrade(Database db, int oldVersion, int newVersion) async{
     if (oldVersion < newVersion) {
-      await db.execute("ALTER TABLE accounts RENAME COLUMN ""user_name"" TO username");
+      // await db.execute("ALTER TABLE accounts RENAME COLUMN ""user_name"" TO username");
     }
   }
 }
