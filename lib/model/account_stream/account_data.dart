@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:crypto_currency/model/position_stream/positions_stream.dart';
 import 'package:crypto_currency/services/trade_service/trade_function.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:path/path.dart';
 import '../../db/objects/orders.dart';
 import '../../services/global_key_storage/global_setting.dart';
 import '../../services/web_socket_configuration/websocket_manager.dart';
+import '../assets_stream/assets_streams.dart';
 
 class AccountData with ChangeNotifier {
   WebSocketManager? webSocketManager;
@@ -30,6 +32,7 @@ class AccountData with ChangeNotifier {
   String pingUserId = '';
   String listenKey = '';
   List<PositionStreams> currentPositions = [];
+  List<AssetStream> currentAssets = [];
 
   AccountData() {
     connectAndUpdateData();
@@ -99,6 +102,8 @@ class AccountData with ChangeNotifier {
   }
 
   void handleInfoResponse(Map<String, dynamic> jsonData) {
+    Map<String, dynamic> result = jsonData['result'];
+
     availableBalance = jsonData['result']['availableBalance'];
     totalMarginBalance = jsonData['result']['totalMarginBalance'];
     totalMaintMargin = jsonData['result']['totalMaintMargin'];
@@ -106,6 +111,26 @@ class AccountData with ChangeNotifier {
     totalUnrealizedProfit = jsonData['result']['totalUnrealizedProfit'];
     totalCrossUnPnl = jsonData['result']['totalCrossUnPnl'];
     marginRatio = BinanceAPI.calculateMarginRatio(double.parse(totalMaintMargin), double.parse(totalMarginBalance));
+    List<dynamic> listAssets = result['assets'].toList();
+
+
+    Map<String, AssetStream> assetSymbol = {}; // Change to hold AssetStream directly
+    for (var assetData in listAssets) {
+      String asset = assetData['asset'];
+
+      if (!assetSymbol.containsKey(asset)) {
+        // If asset doesn't exist, create a new AssetStream
+        assetSymbol[asset] = AssetStream.fromJson(assetData);
+      } else {
+        // If asset exists, update its data
+        assetSymbol[asset]!.updateFromJson(assetData);
+      }
+    }
+    currentAssets = [];
+    for (var asset in assetSymbol.values) {
+      currentAssets.add(asset);
+    }
+      notifyListeners();
   }
 
   void handleBalanceResponse(Map<String, dynamic> jsonData) {
