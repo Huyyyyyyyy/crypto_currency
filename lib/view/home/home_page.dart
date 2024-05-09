@@ -2,8 +2,12 @@ import 'package:crypto_currency/view/components/crypto_list_page.dart';
 import 'package:crypto_currency/view/components/futures_page/futures_page.dart';
 import 'package:crypto_currency/view/components/wallet_page/wallet-page.dart';
 import 'package:flutter/material.dart';
-
-
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:crypto_currency/app.dart';
+import 'package:crypto_currency/cubit_observer.dart';
+import 'package:crypto_currency/view/home/service/get-it/get_it_source.dart';
+import 'package:crypto_currency/view/home/view/home_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -31,6 +35,8 @@ class _MyHomePageState extends State<MyHomePage> {
         futuresNavigator.pushReplacement(MaterialPageRoute(builder: (_) => const FuturesPage()));
       }
     }
+    GetItSource.setup();
+    Bloc.observer = CubitObserver();
   }
 
 
@@ -56,7 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator(
             key: keyForMarket,
             onGenerateRoute: (routeSettings) {
-              return MaterialPageRoute(builder: (context) => const Text('Thị trường')); // Your default page
+              return MaterialPageRoute(builder: (context) => const MyApptradingview()); // Your default page
             },
           ),
           Navigator(
