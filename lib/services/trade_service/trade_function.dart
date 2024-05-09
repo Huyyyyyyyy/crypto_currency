@@ -5,6 +5,7 @@ import 'package:crypto_currency/db/sqlite_configuration/sqlite_config.dart';
 import 'package:crypto_currency/model/enum/enum_order.dart';
 import 'package:crypto_currency/model/order_future/order_model.dart';
 import 'package:crypto_currency/model/position_stream/positions_stream.dart';
+import 'package:crypto_currency/services/global_key_storage/global_setting.dart';
 import 'package:crypto_currency/services/trade_service/filter_variables.dart';
 import 'package:crypto_currency/services/web_socket_configuration/websocket_manager.dart';
 import 'package:http/http.dart' as http;
@@ -12,8 +13,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
 class BinanceAPI {
-  static const String apiKey = 'c1190246c854f0c5cabc136a6d6477cfd0397bb4d1c8c1564e80d7853d7bd337';
-  static const String apiSecret = '485a1c2aeab09ef00b7d4f5371aba2e41c796a72f63204e7338247a819d9a318';
   static const String endpoint = 'https://testnet.binancefuture.com';
   static const String baseUrl = 'https://api.binance.com';
   static const String testNetBaseWebSocket = 'wss://fstream.binancefuture.com';
@@ -23,6 +22,8 @@ class BinanceAPI {
   //area for trading feature (base API)
   static Future<void> getBalance() async{
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       String query = 'recvWindow=9999999&timestamp=$timestamp';
 
@@ -48,6 +49,7 @@ class BinanceAPI {
 
   static Future<String> getExchangeInfo(String symbol) async {
     try {
+      String apiKey = await GlobalSettings.getApiKey();
       String query = 'symbol=$symbol';
 
       final response = await http.get(
@@ -69,6 +71,7 @@ class BinanceAPI {
 
   static Future<String> getMarkPrice(String symbol) async {
     try {
+      String apiKey = await GlobalSettings.getApiKey();
       String query = 'symbol=$symbol';
       final response = await http.get(
         Uri.parse('$endpoint/fapi/v1/premiumIndex?$query'),
@@ -138,7 +141,8 @@ class BinanceAPI {
 
   static Future<bool> createNewOrderFuture(OrderModel newOrder) async {
     try {
-
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       String goodTillDateTimestamp = DateTime.now().add(const Duration(minutes: 15)).millisecondsSinceEpoch.toString();
 
@@ -277,7 +281,7 @@ class BinanceAPI {
               positionSide: jsonResponse['positionSide'].toString(),
               status: jsonResponse['status'].toString(),
               updateTime: jsonResponse['updateTime'].toString(),
-              apiKey: BinanceAPI.apiKey
+              apiKey: apiKey
           );
           if(await Orders.addPositions(order) == true){
             return true;
@@ -299,6 +303,7 @@ class BinanceAPI {
 
   static Future<String> getListenKey() async {
     try {
+      String apiKey = await GlobalSettings.getApiKey();
       final response = await http.post(
         Uri.parse('$endpoint/fapi/v1/listenKey'),
         headers: {
@@ -320,7 +325,8 @@ class BinanceAPI {
 
   static Future<String?> queryPosition(String symbol, String orderId, String origClientOrderId) async{
     try{
-      print(orderId);
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       String query = 'symbol=$symbol&orderId=$orderId&origClientOrderId=$origClientOrderId&recvWindow=${additionalForLimit.recvWindow}&timestamp=$timestamp';
 
@@ -348,6 +354,8 @@ class BinanceAPI {
 
   static Future<bool> closeOpenTrade(PositionStreams currentPosition) async{
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String? currentPos = await queryPosition(currentPosition.symbol, currentPosition.orderId, currentPosition.clientOrderId);
       if(currentPos != null){
         final jsonRes = json.decode(currentPos);
@@ -418,6 +426,8 @@ class BinanceAPI {
   //area for positions (WebSocket API)
   static Future<String> getWsAccountInformation(WebSocketManager? streamOfSocket) async {
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       const recvWindow = 9999999;
 
@@ -444,6 +454,8 @@ class BinanceAPI {
 
   static Future<String> getWsAccountPositions(WebSocketManager? streamOfSocket) async {
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       const recvWindow = 9999999;
 
@@ -471,6 +483,8 @@ class BinanceAPI {
 
   static Future<String> getWsAccountBalance(WebSocketManager? streamOfSocket) async {
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       const recvWindow = 9999999;
 
@@ -517,6 +531,8 @@ class BinanceAPI {
 
   static Future<String> startWsUserDataStream(WebSocketManager? streamOfSocket) async {
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       const recvWindow = 9999999;
 
@@ -545,6 +561,8 @@ class BinanceAPI {
 
   static Future<String> pingWsUserDataStream(WebSocketManager? streamOfSocket, String listenKey) async {
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       const recvWindow = 9999999;
 
@@ -574,6 +592,8 @@ class BinanceAPI {
 
   static Future<String> logonSessionUserData(WebSocketManager? streamOfSocket, String apiKey) async{
     try{
+      String apiKey = await GlobalSettings.getApiKey();
+      String apiSecret = await GlobalSettings.getSecretKey();
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       const recvWindow = 9999999;
 
@@ -605,6 +625,7 @@ class BinanceAPI {
   //area for account feature
   static Future<String?> getServerTime() async {
     try {
+      String apiKey = await GlobalSettings.getApiKey();
       final response = await http.get(
         Uri.parse('$baseUrl/api/v3/time'),
         headers: {
@@ -626,6 +647,8 @@ class BinanceAPI {
   }
 
   static Future<void> getAccount() async {
+    String apiKey = await GlobalSettings.getApiKey();
+    String apiSecret = await GlobalSettings.getSecretKey();
     String? timestamp = await getServerTime();
 
     print(timestamp);

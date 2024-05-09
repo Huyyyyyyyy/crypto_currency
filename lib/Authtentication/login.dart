@@ -108,8 +108,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: TextButton(
                       onPressed: () async{
                         if (formKey.currentState!.validate()) {
-                          List<Accounts> account = await Accounts.customerLogin(username.text, password.text) ;
-                          if(account.isNotEmpty){
+                          Accounts? account = await Accounts.customerLogin(username.text, password.text) ;
+                          if(account != null){
                             print('login success');
                             Navigator.push(
                               context,

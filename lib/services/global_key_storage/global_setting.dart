@@ -5,6 +5,8 @@ class GlobalSettings {
   static const String _urlFundingTime = 'urlFunding';
   static const String _urlAggTrade = 'urlAggTrade';
   static const String _defaultUrl = 'wss://fstream.binance.com/ws/btcusdt@ticker';
+  static const String _apiKey = 'apiKey';
+  static const String _secretKey = 'secretKey';
 
   static Future<String> getUrl() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -19,20 +21,17 @@ class GlobalSettings {
     await prefs.setString(_urlKey, newUrl);
   }
 
-  // Hàm lấy URL cho thời gian funding gần nhất
   static Future<String> getUrlFundingTime() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String result = prefs.getString(_urlFundingTime) ?? _defaultUrl;
     return result.replaceAll('@ticker', '@markPrice');
   }
 
-  // Hàm cập nhật URL cho thời gian funding gần nhất
   static Future<void> updateUrlFundingTime(String newUrl) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(_urlFundingTime);
     await prefs.setString(_urlFundingTime, newUrl.replaceAll('@ticker', '@markPrice'));
   }
-
 
   static Future<String> getUrlAggTrade() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -40,12 +39,34 @@ class GlobalSettings {
     return result.replaceAll('@ticker', '@aggTrade');
   }
 
-
-  // Hàm cập nhật URL cho thời gian funding gần nhất
   static Future<void> updateUrlAggTrade(String newUrl) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(_urlAggTrade);
     await prefs.setString(_urlAggTrade, newUrl.replaceAll('@ticker', '@aggTrade'));
+  }
+
+  static Future<String> getApiKey() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String result = prefs.getString(_apiKey) ?? '';
+    return result;
+  }
+
+  static Future<void> updateApiKey(String newApiKey) async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_apiKey);
+    await prefs.setString(_apiKey, newApiKey);
+  }
+
+  static Future<String> getSecretKey() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String result = prefs.getString(_secretKey) ?? '';
+    return result;
+  }
+
+  static Future<void> updateSecretKey(String newSecret) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_secretKey);
+    await prefs.setString(_secretKey, newSecret);
   }
 
 }
